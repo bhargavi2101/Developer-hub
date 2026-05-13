@@ -1,5 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { LanguageService, Language } from '../language.service';
+import { TranslationService } from '../translation.service';
 
 @Component({
   selector: 'app-language-switcher',
@@ -20,7 +21,10 @@ export class LanguageSwitcher implements OnInit, OnDestroy {
   isDropdownOpen = false;
   searchTerm = '';
 
-  constructor(private languageService: LanguageService) {}
+  constructor(
+    private languageService: LanguageService,
+    private translationService: TranslationService
+  ) {}
 
   ngOnInit() {
     // Get current language
@@ -80,10 +84,8 @@ export class LanguageSwitcher implements OnInit, OnDestroy {
     );
   }
 
-  // Simple translate method (would integrate with Angular i18n)
+  // Translate method using TranslationService
   translate(key: string): string {
-    // This would integrate with Angular's i18n system
-    // For now, return the key as a placeholder
-    return key;
+    return this.translationService.translate(key);
   }
 }

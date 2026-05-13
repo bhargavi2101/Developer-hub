@@ -1,12 +1,29 @@
+:host {
+  --bg-deep: #0a0e27;
+  --bg-surface: #12193a;
+  --card-bg: rgba(18, 25, 58, 0.8);
+  --accent-indigo: #6366f1;
+  --accent-purple: #8b5cf6;
+  --accent-pink: #d946ef;
+  --text-main: #f8fafc;
+  --text-dim: #94a3b8;
+  --gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #d946ef 100%);
+  --line: rgba(255, 255, 255, 0.1);
+  --input-bg: rgba(18, 25, 58, 0.6);
+  --success: #10b981;
+  --warning: #f59e0b;
+  --error: #ef4444;
+}
+
 .shared-nav {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   z-index: 1000;
-  background: #ffffff;
+  background: var(--bg-surface);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  border-bottom: 2px solid #e5e7eb;
+  border-bottom: 2px solid var(--line);
 }
 
 .nav-container {
@@ -29,7 +46,7 @@
 }
 
 .nav-brand:hover {
-  transform: scale(1.02);
+  transform: scale(1.05);
 }
 
 .brand-icon {
@@ -39,13 +56,16 @@
 .brand-text {
   font-size: 24px;
   font-weight: 700;
-  color: #4f46e5;
+  background: var(--gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .nav-links {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
 }
 
 .nav-link {
@@ -54,7 +74,7 @@
   gap: 8px;
   padding: 10px 16px;
   text-decoration: none;
-  color: #6b7280;
+  color: var(--text-dim);
   border-radius: 8px;
   transition: all 0.2s ease;
   font-weight: 500;
@@ -62,13 +82,13 @@
 }
 
 .nav-link:hover {
-  background: #f3f4f6;
-  color: #1f2937;
+  background: rgba(99, 102, 241, 0.15);
+  color: var(--text-main);
 }
 
 .nav-link.active {
-  background: #e0e7ff;
-  color: #4f46e5;
+  background: var(--accent-indigo);
+  color: var(--text-main);
   font-weight: 600;
 }
 
@@ -84,8 +104,8 @@
   position: absolute;
   top: 4px;
   right: 4px;
-  background: #ef4444;
-  color: #ffffff;
+  background: var(--error);
+  color: white;
   border-radius: 50%;
   width: 20px;
   height: 20px;
@@ -108,26 +128,27 @@
   justify-content: center;
   width: 40px;
   height: 40px;
-  border: none;
-  background: #f3f4f6;
+  background: rgba(99, 102, 241, 0.1);
+  border: 2px solid var(--line);
   border-radius: 8px;
   cursor: pointer;
-  color: #6b7280;
   transition: all 0.2s ease;
+  color: var(--text-main);
 }
 
 .nav-btn:hover {
-  background: #e5e7eb;
-  color: #1f2937;
+  background: var(--accent-indigo);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(99, 102, 241, 0.2);
+}
+
+.nav-btn svg {
+  flex-shrink: 0;
 }
 
 /* RTL Support */
 .rtl .shared-nav {
   direction: rtl;
-}
-
-.rtl .nav-container {
-  flex-direction: row-reverse;
 }
 
 .rtl .nav-brand {
@@ -142,88 +163,62 @@
   flex-direction: row-reverse;
 }
 
-.rtl .notification-badge {
-  left: 4px;
-  right: auto;
+.rtl .nav-actions {
+  flex-direction: row-reverse;
 }
 
-/* Responsive Design */
-@media (max-width: 1024px) {
-  .nav-link span {
-    display: none;
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+  .shared-nav {
+    background: var(--bg-deep);
+    border-bottom-color: var(--line);
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
   .nav-container {
     padding: 8px 16px;
   }
 
-  .nav-brand {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .brand-text {
+  .nav-brand .brand-text {
     font-size: 18px;
-  }
-
-  .nav-links {
-    gap: 4px;
   }
 
   .nav-link {
     padding: 8px 12px;
   }
 
-  .nav-link svg {
-    width: 18px;
-    height: 18px;
+  .nav-link span {
+    font-size: 14px;
   }
 
-  .nav-actions {
-    gap: 8px;
+  .notification-badge {
+    width: 16px;
+    height: 16px;
+    font-size: 9px;
   }
 
   .nav-btn {
-    width: 36px;
-    height: 36px;
+    width: 32px;
+    height: 32px;
+  }
+
+  .nav-btn svg {
+    width: 16px;
+    height: 16px;
   }
 }
 
-/* Dark Mode Support */
-@media (prefers-color-scheme: dark) {
-  .shared-nav {
-    background: #1f2937;
-    border-bottom-color: #374151;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-  }
-
-  .nav-brand .brand-text {
-    color: #818cf8;
+@media (max-width: 768px) {
+  .nav-links {
+    gap: 8px;
   }
 
   .nav-link {
-    color: #9ca3af;
+    padding: 6px 10px;
   }
 
-  .nav-link:hover {
-    background: #374151;
-    color: #f3f4f6;
-  }
-
-  .nav-link.active {
-    background: #1e3a8a;
-    color: #60a5fa;
-  }
-
-  .nav-btn {
-    background: #374151;
-    color: #9ca3af;
-  }
-
-  .nav-btn:hover {
-    background: #4b5563;
-    color: #f3f4f6;
+  .nav-link span {
+    font-size: 12px;
   }
 }
