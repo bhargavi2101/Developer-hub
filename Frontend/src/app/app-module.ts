@@ -21,7 +21,6 @@ import { HttpInterceptorService } from './http-interceptor.service';
 import { AdvancedSearch } from './search/advanced-search.component';
 import { NotificationCenter } from './notification-center/notification-center.component';
 import { LanguageSwitcher } from './language-switcher/language-switcher.component';
-import { SharedNav } from './shared-nav/shared-nav.component';
 
 @NgModule({
   declarations: [
@@ -40,8 +39,7 @@ import { SharedNav } from './shared-nav/shared-nav.component';
     Quiz,
     AdvancedSearch,
     NotificationCenter,
-    LanguageSwitcher,
-    SharedNav
+    LanguageSwitcher
   ],
   imports: [
     BrowserModule,
