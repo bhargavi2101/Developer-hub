@@ -1,0 +1,183 @@
+<div class="topic-detail-wrapper">
+  <nav class="top-nav">
+    <div class="logo" routerLink="/landing">Dev<span>Hub</span></div>
+    <div class="top-links">
+      <a routerLink="/landing">Home</a>
+      <a routerLink="/roadmaps">Roadmaps</a>
+      <a routerLink="/dashboard">Dashboard</a>
+    </div>
+  </nav>
+
+  <div *ngIf="topic; else loadingState">
+    <!-- Topic Header -->
+    <header class="topic-header">
+      <button type="button" class="back-btn" (click)="goBack()">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M19 12H5M12 19l-7 7 7-7"></path>
+        </svg>
+        Back to Topics
+      </button>
+
+      <div class="topic-info">
+        <div class="topic-badge">{{ technologyId === 'html-css' ? 'Frontend' : 'Backend' }}</div>
+        <h1 class="topic-title">{{ topic.title }}</h1>
+        <p class="topic-description">{{ topic.description }}</p>
+      </div>
+    </header>
+
+    <main class="topic-content">
+      <!-- Topic Description -->
+      <section class="description-section">
+        <h2 class="section-title">📖 About This Topic</h2>
+        <p class="topic-full-description">{{ topic.description }}</p>
+      </section>
+
+      <!-- Sub Topics -->
+      <section class="sub-topics-section" *ngIf="topic.subTopics && topic.subTopics.length > 0">
+        <h2 class="section-title">📚 Sub Topics</h2>
+        <div class="sub-topics-grid">
+          <button
+            type="button"
+            *ngFor="let subTopic of topic.subTopics"
+            (click)="selectSubTopic(subTopic)"
+            class="sub-topic-card"
+            [class.active]="selectedSubTopic === subTopic">
+            <h3 class="sub-topic-title">{{ subTopic }}</h3>
+            <p class="sub-topic-description">Click to learn more about {{ subTopic }}</p>
+            <div class="sub-topic-arrow">→</div>
+          </button>
+        </div>
+      </section>
+
+      <!-- Sub Topic Details Modal -->
+      <div class="sub-topic-modal-overlay" *ngIf="subTopicDetails" (click)="closeSubTopic()">
+        <div class="sub-topic-modal" (click)="$event.stopPropagation()">
+          <div class="sub-topic-modal-header">
+            <h2 class="sub-topic-modal-title">{{ subTopicDetails.title }}</h2>
+            <button type="button" class="close-modal-btn" (click)="closeSubTopic()">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M18 6L6 18M6 6l12 12"></path>
+              </svg>
+            </button>
+          </div>
+
+          <div class="sub-topic-modal-content">
+            <p class="sub-topic-description-full">{{ subTopicDetails.description }}</p>
+
+            <div class="sub-topic-content-sections">
+              <div *ngFor="let section of subTopicDetails.content" class="content-detail-section">
+                <h3 class="content-detail-heading">{{ section.heading }}</h3>
+                <p class="content-detail-text">{{ section.text }}</p>
+                <div *ngIf="section.code" class="code-block">
+                  <div class="code-header">Code Example:</div>
+                  <pre class="code-content"><code>{{ section.code }}</code></pre>
+                </div>
+                <div *ngIf="section.example" class="example-block">
+                  <div class="example-header">💡 Key Insight:</div>
+                  <p class="example-content">{{ section.example }}</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="practical-example-section" *ngIf="subTopicDetails.practicalExample">
+              <h4 class="practical-heading">🛠️ Practical Example:</h4>
+              <p class="practical-content">{{ subTopicDetails.practicalExample }}</p>
+            </div>
+
+            <div class="best-practices-section" *ngIf="subTopicDetails.bestPractices">
+              <h4 class="practices-heading">✅ Best Practices:</h4>
+              <ul class="practices-list">
+                <li *ngFor="let practice of subTopicDetails.bestPractices" class="practice-item">
+                  <span class="practice-bullet">•</span>
+                  <span class="practice-text">{{ practice }}</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Key Concepts -->
+      <section class="concepts-section" *ngIf="topic.keyConcepts && topic.keyConcepts.length > 0">
+        <h2 class="section-title">💡 Key Concepts</h2>
+        <div class="concepts-grid">
+          <div *ngFor="let concept of topic.keyConcepts" class="concept-card">
+            <div class="concept-dot"></div>
+            <span class="concept-text">{{ concept }}</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Learning Outcomes -->
+      <section class="outcomes-section">
+        <h2 class="section-title">🎯 Learning Outcomes</h2>
+        <p class="outcome-description">After completing this topic, you'll be able to:</p>
+        <ul class="outcomes-list">
+          <li class="outcome-item">
+            <span class="check">✅</span>
+            <span class="outcome-text">{{ topic.learningOutcome1 }}</span>
+          </li>
+          <li class="outcome-item">
+            <span class="check">✅</span>
+            <span class="outcome-text">{{ topic.learningOutcome2 }}</span>
+          </li>
+          <li class="outcome-item">
+            <span class="check">✅</span>
+            <span class="outcome-text">{{ topic.learningOutcome3 }}</span>
+          </li>
+        </ul>
+      </section>
+
+      <!-- Time Estimation -->
+      <section class="time-section">
+        <h2 class="section-title">⏱️ Time Required</h2>
+        <p class="time-estimate">Estimated {{ topic.estimatedTime || '2-4 hours' }}</p>
+      </section>
+
+      <!-- Practical Application -->
+      <section class="application-section">
+        <h2 class="section-title">🛠️ Practical Application</h2>
+        <p class="application-description">You'll build a practical project while learning this topic.</p>
+        <div class="project-idea">
+          <h4 class="project-idea-title">Project Idea:</h4>
+          <p class="project-idea-description">{{ topic.practicalProject }}</p>
+        </div>
+      </section>
+
+      <!-- Related Topics -->
+      <section class="related-section" *ngIf="topic.relatedTopics && topic.relatedTopics.length > 0">
+        <h2 class="section-title">🔗 Related Topics</h2>
+        <div class="related-topics-grid">
+          <a *ngFor="let relatedTopic of topic.relatedTopics" class="related-topic-link">
+            <div class="related-topic-card">
+              <span class="related-topic-title">{{ relatedTopic }}</span>
+              <span class="related-topic-tag">Continue →</span>
+            </div>
+          </a>
+        </div>
+      </section>
+
+      <!-- Learning Tools -->
+      <section class="tools-section">
+        <h2 class="tools-title">🛠️ Learning Tools</h2>
+        <div class="tools-grid">
+          <button type="button" class="tool-btn" routerLink="/notes/{{ technologyId }}">
+            <span class="tool-icon">📝</span>
+            <span class="tool-label">Take Notes</span>
+          </button>
+          <button type="button" class="tool-btn" routerLink="/quiz/{{ subTechnologyId }}">
+            <span class="tool-icon">❓</span>
+            <span class="tool-label">Take Quiz</span>
+          </button>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <ng-template #loadingState>
+    <div class="loading-state">
+      <div class="loading-spinner"></div>
+      <p>Loading topic details...</p>
+    </div>
+  </ng-template>
+</div>

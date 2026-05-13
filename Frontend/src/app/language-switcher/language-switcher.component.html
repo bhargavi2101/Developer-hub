@@ -1,0 +1,45 @@
+<div class="language-switcher">
+  <button
+    class="language-button"
+    (click)="toggleDropdown()"
+    [class.open]="isDropdownOpen">
+    <span class="current-flag">{{ currentLanguage.flag }}</span>
+    <span class="current-name">{{ currentLanguage.nativeName }}</span>
+    <svg class="dropdown-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M6 9l6 6 6-6"></path>
+    </svg>
+  </button>
+
+  <!-- Language Dropdown -->
+  <div *ngIf="isDropdownOpen" class="language-dropdown">
+    <div class="dropdown-search">
+      <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"></circle>
+        <path d="m21 21-4.3-4.3"></path>
+      </svg>
+      <input
+        type="text"
+        class="search-input"
+        [placeholder]="translate('search.placeholder')"
+        [(ngModel)]="searchTerm"
+        (input)="filterLanguages()">
+    </div>
+    <div class="language-list">
+      <div
+        *ngFor="let language of filteredLanguages"
+        class="language-option"
+        (click)="selectLanguage(language)"
+        [class.selected]="currentLanguage.code === language.code">
+        <span class="language-flag">{{ language.flag }}</span>
+        <div class="language-info">
+          <span class="language-name">{{ language.nativeName }}</span>
+          <span class="language-english">{{ language.name }}</span>
+        </div>
+        <svg *ngIf="currentLanguage.code === language.code" class="check-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+          <path d="M20 6L9 17l-5-5"></path>
+          <path d="M20 12h-5"></path>
+        </svg>
+      </div>
+    </div>
+  </div>
+</div>

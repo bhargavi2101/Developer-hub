@@ -1,0 +1,235 @@
+<div class="quiz-container">
+  <div class="quiz-header">
+    <button class="btn-back" (click)="backToTechnology()">
+      ← Back to Technology
+    </button>
+    <h1 *ngIf="quiz">🧠 Quiz: {{ quiz.title }}</h1>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading">
+    <div class="loading-spinner"></div>
+    <p>Loading quiz...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="errorMessage" class="error-message">
+    <div class="error-icon">⚠️</div>
+    <p>{{ errorMessage }}</p>
+    <button class="btn-retry" (click)="loadQuiz()">Try Again</button>
+  </div>
+
+  <!-- Quiz Introduction -->
+  <div *ngIf="quiz && !isLoading && !isQuizStarted && !isQuizCompleted" class="quiz-intro">
+    <div class="quiz-info">
+      <div class="quiz-meta">
+        <div class="meta-item">
+          <span class="meta-icon">⏱️</span>
+          <div class="meta-details">
+            <p class="meta-label">Time Limit</p>
+            <p class="meta-value">{{ formatTime(quiz.timeLimit * 60) }}</p>
+          </div>
+        </div>
+        <div class="meta-item">
+          <span class="meta-icon">📊</span>
+          <div class="meta-details">
+            <p class="meta-label">Questions</p>
+            <p class="meta-value">{{ quiz.questionCount }}</p>
+          </div>
+        </div>
+        <div class="meta-item">
+          <span class="meta-icon">🎯</span>
+          <div class="meta-details">
+            <p class="meta-label">Passing Score</p>
+            <p class="meta-value">{{ quiz.passingScore }}%</p>
+          </div>
+        </div>
+        <div class="meta-item">
+          <span class="meta-icon">⚡</span>
+          <div class="meta-details">
+            <p class="meta-label">Difficulty</p>
+            <p class="meta-value">{{ quiz.difficulty }}</p>
+          </div>
+        </div>
+      </div>
+      <p class="quiz-description" *ngIf="quiz.description">
+        {{ quiz.description }}
+      </p>
+    </div>
+
+    <div class="intro-actions">
+      <button class="btn-start" (click)="startQuiz()">
+        <span>🚀</span> Start Quiz
+      </button>
+    </div>
+  </div>
+
+  <!-- Quiz In Progress -->
+  <div *ngIf="isQuizStarted && quiz && !isQuizCompleted" class="quiz-progress">
+    <!-- Timer Bar -->
+    <div class="timer-bar">
+      <div class="timer-remaining">
+        <span class="timer-icon">⏱️</span>
+        <span class="timer-text">Time: {{ formatTime(timeRemaining) }}</span>
+      </div>
+      <div class="progress-indicator">
+        <div class="progress-label">Question {{ currentQuestionIndex + 1 }}/{{ questions.length }}</div>
+        <div class="progress-bar-bg">
+          <div class="progress-bar-fill" [style.width.%]="progressPercentage"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Question -->
+    <div class="question-container" *ngIf="getCurrentQuestion()">
+      <div class="question-card">
+        <div class="question-header">
+          <span class="question-number">Question {{ currentQuestionIndex + 1 }}</span>
+          <span class="question-points">{{ getCurrentQuestion().points }} pts</span>
+        </div>
+
+        <h2 class="question-text">{{ getCurrentQuestion().question }}</h2>
+
+        <!-- Multiple Choice Questions -->
+        <div class="answer-options" *ngIf="getCurrentQuestion().type === 'multiple-choice'">
+          <button
+            *ngFor="let option of getCurrentQuestion().options"
+            class="option-btn"
+            [class.selected]="userAnswers[currentQuestionIndex]?.userAnswer === option"
+            (click)="selectAnswer(option)">
+            <span class="option-letter">{{ ['A', 'B', 'C', 'D'][getCurrentQuestion().options.indexOf(option)] }}</span>
+            <span class="option-text">{{ option }}</span>
+          </button>
+        </div>
+
+        <!-- True/False Questions -->
+        <div class="answer-options" *ngIf="getCurrentQuestion().type === 'true-false'">
+          <button
+            class="option-btn tf-option"
+            [class.selected]="userAnswers[currentQuestionIndex]?.userAnswer === true"
+            (click)="selectAnswer(true)">
+            <span class="option-letter">T</span>
+            <span class="option-text">True</span>
+          </button>
+          <button
+            class="option-btn tf-option"
+            [class.selected]="userAnswers[currentQuestionIndex]?.userAnswer === false"
+            (click)="selectAnswer(false)">
+            <span class="option-letter">F</span>
+            <span class="option-text">False</span>
+          </button>
+        </div>
+
+        <!-- Text Input Questions -->
+        <div class="answer-input" *ngIf="getCurrentQuestion().type === 'text'">
+          <input
+            type="text"
+            [value]="userAnswers[currentQuestionIndex]?.userAnswer || ''"
+            (input)="selectAnswer($event.target.value)"
+            placeholder="Type your answer..."
+            class="text-answer">
+        </div>
+      </div>
+
+      <!-- Navigation -->
+      <div class="question-nav">
+        <button
+          class="btn-nav"
+          (click)="previousQuestion()"
+          [disabled]="currentQuestionIndex === 0">
+          ← Previous
+        </button>
+        <button
+          class="btn-nav btn-next"
+          (click)="nextQuestion()">
+          {{ currentQuestionIndex === questions.length - 1 ? 'Submit' : 'Next' }} →
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quiz Results -->
+  <div *ngIf="isQuizCompleted && quizResult" class="quiz-results">
+    <div class="results-header">
+      <h2>{{ quizResult.passed ? '🎉 Quiz Completed!' : '😞 Quiz Failed' }}</h2>
+      <p class="result-message">
+        {{ quizResult.passed ? 'Congratulations! You passed the quiz.' : 'Keep learning and try again!' }}
+      </p>
+    </div>
+
+    <div class="score-display">
+      <div class="score-card">
+        <div class="score-value">{{ quizResult.score }}</div>
+        <div class="score-label">Points</div>
+        <div class="score-max">of {{ quizResult.maxScore }}</div>
+      </div>
+      <div class="percentage-badge" [class.passed]="quizResult.passed">
+        {{ quizResult.percentage }}%
+      </div>
+    </div>
+
+    <div class="results-stats">
+      <div class="stat-item">
+        <span class="stat-icon">✅</span>
+        <div class="stat-info">
+          <p class="stat-label">Correct Answers</p>
+          <p class="stat-value">{{ getAnsweredCount() }}/{{ questions.length }}</p>
+        </div>
+      </div>
+      <div class="stat-item">
+        <span class="stat-icon">⏭️</span>
+        <div class="stat-info">
+          <p class="stat-label">Skipped Questions</p>
+          <p class="stat-value">{{ getSkippedCount() }}</p>
+        </div>
+      </div>
+      <div class="stat-item">
+        <span class="stat-icon">⏱️</span>
+        <div class="stat-info">
+          <p class="stat-label">Time Taken</p>
+          <p class="stat-value">{{ formatTime(getTimeSpentMinutes()) }}</p>
+        </div>
+      </div>
+      <div class="stat-item">
+        <span class="stat-icon">📊</span>
+        <div class="stat-info">
+          <p class="stat-label">Attempts</p>
+          <p class="stat-value">{{ quizResult.attemptNumber }}/{{ quizResult.attemptNumber + quizResult.attemptsRemaining }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Answer Review -->
+    <div class="answers-review">
+      <h3>Answer Review</h3>
+      <div class="review-item" *ngFor="let answer of quizResult.answers; let i = index">
+        <div class="review-number">Q{{ i + 1 }}</div>
+        <div class="review-content">
+          <p class="review-question">{{ questions[i].question }}</p>
+          <div class="review-details">
+            <div class="review-answer" [class.correct]="answer.isCorrect" [class.incorrect]="!answer.isCorrect">
+              <span class="answer-label">Your Answer:</span>
+              <span class="answer-value">
+                {{ answer.userAnswer || 'Skipped' }}
+              </span>
+            </div>
+            <div class="review-explanation" *ngIf="!answer.isCorrect && questions[i].explanation">
+              <span class="explanation-label">Explanation:</span>
+              <span class="explanation-text">{{ questions[i].explanation }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="results-actions">
+      <button class="btn-retry" (click)="retryQuiz()">
+        <span>🔄</span> Try Again
+      </button>
+      <button class="btn-back" (click)="backToTechnology()">
+        <span>←</span> Back to Technology
+      </button>
+    </div>
+  </div>
+</div>

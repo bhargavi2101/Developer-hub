@@ -1,0 +1,362 @@
+<div class="analytics-container">
+  <!-- Analytics Navigation -->
+  <div class="analytics-nav">
+    <h1>📊 Analytics Dashboard</h1>
+    <div class="nav-tabs">
+      <button
+        (click)="setTab('patterns')"
+        [class.active]="currentTab === 'patterns'"
+        class="nav-tab"
+      >
+        📈 Learning Patterns
+      </button>
+      <button
+        (click)="setTab('timeline')"
+        [class.active]="currentTab === 'timeline'"
+        class="nav-tab"
+      >
+        📅 Progress Timeline
+      </button>
+      <button
+        (click)="setTab('statistics')"
+        [class.active]="currentTab === 'statistics'"
+        class="nav-tab"
+      >
+        📊 Detailed Statistics
+      </button>
+      <button
+        (click)="setTab('leaderboard')"
+        [class.active]="currentTab === 'leaderboard'"
+        class="nav-tab"
+      >
+        🏆 Leaderboard
+      </button>
+    </div>
+  </div>
+
+  <!-- Learning Patterns Tab -->
+  <div *ngIf="currentTab === 'patterns'" class="patterns-content">
+    <div class="period-selector">
+      <label>Time Period:</label>
+      <select [(ngModel)]="selectedPeriod" (change)="setPeriod(selectedPeriod)" class="period-select">
+        <option value="7d">Last 7 Days</option>
+        <option value="30d">Last 30 Days</option>
+        <option value="90d">Last 90 Days</option>
+      </select>
+    </div>
+
+    <div *ngIf="isLoadingPatterns" class="loading-state">
+      <div class="spinner"></div>
+      <p>Loading learning patterns...</p>
+    </div>
+
+    <div *ngIf="!isLoadingPatterns && patternSummary" class="patterns-grid">
+      <!-- Summary Cards -->
+      <div class="summary-section">
+        <div class="summary-card">
+          <span class="summary-icon">⏱️</span>
+          <div class="summary-value">{{ formatTime(patternSummary.summary.totalDuration) }}</div>
+          <div class="summary-label">Total Learning Time</div>
+        </div>
+        <div class="summary-card">
+          <span class="summary-icon">📖</span>
+          <div class="summary-value">{{ patternSummary.summary.totalSessions }}</div>
+          <div class="summary-label">Learning Sessions</div>
+        </div>
+        <div class="summary-card">
+          <span class="summary-icon">✅</span>
+          <div class="summary-value">{{ patternSummary.summary.completedLessons }}</div>
+          <div class="summary-label">Lessons Completed</div>
+        </div>
+        <div class="summary-card">
+          <span class="summary-icon">📅</span>
+          <div class="summary-value">{{ patternSummary.summary.activeDays }}</div>
+          <div class="summary-label">Active Days</div>
+        </div>
+      </div>
+
+      <!-- Learning by Day Chart -->
+      <div class="chart-section">
+        <h3>Learning Time by Day</h3>
+        <div class="chart-container">
+          <div class="chart-bars">
+            <div *ngFor="let pattern of learningPatterns" class="chart-bar-wrapper">
+              <div class="bar-label">{{ pattern.date | date:'MM/dd' }}</div>
+              <div class="bar-container">
+                <div
+                  class="bar-fill"
+                  [style.height.%]="(pattern.duration / 300) * 100"
+                  [title]="formatTime(pattern.duration)"
+                ></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Learning by Technology -->
+      <div class="tech-section">
+        <h3>Learning by Technology</h3>
+        <div class="tech-list">
+          <div *ngFor="let tech of learningByTechnology" class="tech-item">
+            <div class="tech-icon" [style.background-color]="getCategoryColor(tech.technology.category)">
+              {{ tech.technology.name.charAt(0) }}
+            </div>
+            <div class="tech-details">
+              <div class="tech-name">{{ tech.technology.name }}</div>
+              <div class="tech-stats">
+                <span>⏱️ {{ formatTime(tech.duration) }}</span>
+                <span>📖 {{ tech.sessions }} sessions</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Learning by Hour -->
+      <div class="hour-section">
+        <h3>Peak Learning Hours</h3>
+        <div class="hour-grid">
+          <div *ngFor="let minutes of learningByHour; let i = index" class="hour-item">
+            <div class="hour-label">{{ i }}:00</div>
+            <div class="hour-bar" [style.height.%]="(minutes / 100) * 100"></div>
+            <div class="hour-time">{{ formatTime(minutes) }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Progress Timeline Tab -->
+  <div *ngIf="currentTab === 'timeline'" class="timeline-content">
+    <div *ngIf="isLoadingTimeline" class="loading-state">
+      <div class="spinner"></div>
+      <p>Loading progress timeline...</p>
+    </div>
+
+    <div *ngIf="!isLoadingTimeline && progressTimeline" class="timeline-grid">
+      <!-- Roadmap Progress -->
+      <div class="roadmap-section">
+        <h3>Roadmap Progress</h3>
+        <div class="roadmap-summary">
+          <div class="summary-item">
+            <span class="summary-label">Total Roadmaps:</span>
+            <span class="summary-value">{{ progressTimeline.summary.totalRoadmaps }}</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label">Completed:</span>
+            <span class="summary-value success">{{ progressTimeline.summary.completedRoadmaps }}</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label">In Progress:</span>
+            <span class="summary-value">{{ progressTimeline.summary.inProgressRoadmaps }}</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label">Total Lessons Completed:</span>
+            <span class="summary-value">{{ progressTimeline.summary.totalLessonsCompleted }}</span>
+          </div>
+        </div>
+
+        <div class="roadmap-list">
+          <div *ngFor="let roadmap of roadmaps" class="roadmap-item">
+            <div class="roadmap-header">
+              <span class="roadmap-name">{{ roadmap.technologyId.name }}</span>
+              <div class="roadmap-progress">
+                <div class="progress-bar">
+                  <div
+                    class="progress-fill"
+                    [style.width.%]="roadmap.completionPercentage"
+                  ></div>
+                </div>
+                <span class="progress-text">{{ roadmap.completionPercentage }}%</span>
+              </div>
+            </div>
+            <div class="roadmap-details">
+              <span>📖 {{ roadmap.totalLessons }} lessons</span>
+              <span>✅ {{ roadmap.completedLessons }} completed</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Milestones -->
+      <div class="milestone-section">
+        <h3>Recent Milestones</h3>
+        <div class="milestone-list">
+          <div *ngFor="let milestone of milestones" class="milestone-item">
+            <div class="milestone-icon">{{ getActivityIcon(milestone.activityType) }}</div>
+            <div class="milestone-details">
+              <div class="milestone-description">{{ milestone.description }}</div>
+              <div class="milestone-time">{{ formatTimeAgo(milestone.createdAt) }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Activity -->
+      <div class="activity-section">
+        <h3>Recent Activity</h3>
+        <div class="activity-list">
+          <div *ngFor="let activity of recentActivity" class="activity-item">
+            <div class="activity-icon">{{ getActivityIcon(activity.activityType) }}</div>
+            <div class="activity-details">
+              <div class="activity-description">{{ activity.description }}</div>
+              <div class="activity-time">{{ formatTimeAgo(activity.createdAt) }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Detailed Statistics Tab -->
+  <div *ngIf="currentTab === 'statistics'" class="statistics-content">
+    <div *ngIf="isLoadingStats" class="loading-state">
+      <div class="spinner"></div>
+      <p>Loading statistics...</p>
+    </div>
+
+    <div *ngIf="!isLoadingStats && userStats" class="stats-grid">
+      <!-- Learning Stats -->
+      <div class="stat-section">
+        <h3>📖 Learning Statistics</h3>
+        <div class="stat-items">
+          <div class="stat-item">
+            <span class="stat-label">Total Lessons</span>
+            <span class="stat-value">{{ userStats.learning.totalLessons || 0 }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Completed</span>
+            <span class="stat-value success">{{ userStats.learning.completedLessons || 0 }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Completion Rate</span>
+            <span class="stat-value">{{ userStats.learning.completionRate || '0' }}%</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Learning Time</span>
+            <span class="stat-value">{{ formatTime(userStats.learning.learningTime || 0) }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Learning Streak</span>
+            <span class="stat-value" [style.color]="getLearningStreakColor(userStats.streak.currentStreak || 0)">
+              🔥 {{ userStats.streak.currentStreak || 0 }} days
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quiz Stats -->
+      <div class="stat-section">
+        <h3>🎯 Quiz Performance</h3>
+        <div class="stat-items">
+          <div class="stat-item">
+            <span class="stat-label">Total Quizzes</span>
+            <span class="stat-value">{{ userStats.quizzes.totalQuizzes || 0 }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Average Score</span>
+            <span class="stat-value">{{ userStats.quizzes.averageScore || 0 }}%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Engagement Stats -->
+      <div class="stat-section">
+        <h3>💬 Community Engagement</h3>
+        <div class="stat-items">
+          <div class="stat-item">
+            <span class="stat-label">Notes Created</span>
+            <span class="stat-value">{{ userStats.engagement.notes || 0 }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Posts Made</span>
+            <span class="stat-value">{{ userStats.engagement.posts || 0 }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Forum Posts</span>
+            <span class="stat-value">{{ userStats.engagement.forumPosts || 0 }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Total Engagement</span>
+            <span class="stat-value">{{ userStats.engagement.totalEngagement || 0 }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Achievements -->
+      <div class="stat-section">
+        <h3>🏆 Achievements</h3>
+        <div class="stat-items">
+          <div class="stat-item">
+            <span class="stat-label">Total Points</span>
+            <span class="stat-value">⭐ {{ userStats.achievements.points || 0 }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Longest Streak</span>
+            <span class="stat-value">🔥 {{ userStats.streak.longestStreak || 0 }} days</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Current Rank</span>
+            <span class="stat-value">
+              #{{ userStats.achievements.rank.position || 0 }} {{ userStats.achievements.rank.title || 'N/A' }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Leaderboard Tab -->
+  <div *ngIf="currentTab === 'leaderboard'" class="leaderboard-content">
+    <div class="leaderboard-header">
+      <h3>🏆 Global Leaderboard</h3>
+      <div class="leaderboard-filters">
+        <label>Rank By:</label>
+        <select [(ngModel)]="leaderboardType" (change)="setLeaderboardType(leaderboardType)" class="filter-select">
+          <option value="points">Points</option>
+          <option value="streak">Learning Streak</option>
+          <option value="lessons">Lessons Completed</option>
+        </select>
+      </div>
+    </div>
+
+    <div *ngIf="isLoadingLeaderboard" class="loading-state">
+      <div class="spinner"></div>
+      <p>Loading leaderboard...</p>
+    </div>
+
+    <div *ngIf="!isLoadingLeaderboard" class="leaderboard-list">
+      <div *ngFor="let entry of leaderboard; let i = index" class="leaderboard-item" [class.top-three]="i < 3">
+        <div class="rank-badge" [class.top-three]="i < 3">{{ i + 1 }}</div>
+        <div class="player-info">
+          <img *ngIf="entry.avatar" [src]="'http://localhost:3000/uploads/' + entry.avatar" class="player-avatar" />
+          <span class="player-avatar-placeholder" *ngIf="!entry.avatar">
+            {{ entry.firstName.charAt(0) }}
+          </span>
+          <div class="player-details">
+            <span class="player-name">{{ entry.firstName }} {{ entry.lastName }}</span>
+            <span class="player-username">@{{ entry.username }}</span>
+          </div>
+        </div>
+        <div class="player-stats">
+          <div class="stat-row">
+            <span class="stat-icon">⭐</span>
+            <span class="stat-value">{{ entry.totalPoints }}</span>
+            <span class="stat-label">Points</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-icon">🔥</span>
+            <span class="stat-value">{{ entry.learningStreak }}</span>
+            <span class="stat-label">Streak</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-icon">📖</span>
+            <span class="stat-value">{{ entry.completedLessons }}</span>
+            <span class="stat-label">Lessons</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

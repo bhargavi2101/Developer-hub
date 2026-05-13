@@ -1,0 +1,229 @@
+<div class="technology-page-wrapper-full">
+  <nav class="top-nav-full">
+    <div class="logo" routerLink="/landing">Dev<span>Hub</span></div>
+    <div class="top-links">
+      <a routerLink="/landing">Home</a>
+      <a routerLink="/roadmaps">Roadmaps</a>
+      <a routerLink="/dashboard">Dashboard</a>
+    </div>
+  </nav>
+
+  <div *ngIf="technology; else loadingState">
+
+    <!-- Show detailed sub-technology content when subTechnologyId is provided -->
+    <div *ngIf="subTechnologyId">
+      <header class="sub-tech-header-full">
+        <button type="button" class="back-btn-full" (click)="backToModules()">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 12H5M12 19l-7 7 7-7"></path>
+          </svg>
+          Back to Modules
+        </button>
+
+        <div class="sub-tech-info-full">
+          <div class="sub-tech-badge-full">{{ technology.category }}</div>
+          <h1 class="sub-tech-title-full">{{ selectedSubTechnology.title }}</h1>
+          <p class="sub-tech-description-full">{{ selectedSubTechnology.description }}</p>
+        </div>
+      </header>
+
+      <main class="sub-tech-main-full">
+        <!-- Overview -->
+        <section class="content-section-full" *ngIf="selectedSubTechnology.detailedContent">
+          <h2 class="section-title-full">Overview</h2>
+          <p class="section-content-full">{{ selectedSubTechnology.detailedContent.overview }}</p>
+        </section>
+
+        <!-- Prerequisites -->
+        <section class="content-section-full" *ngIf="selectedSubTechnology.detailedContent.prerequisites">
+          <h2 class="section-title-full">Prerequisites</h2>
+          <div class="prerequisites-grid-full">
+            <span *ngFor="let prereq of selectedSubTechnology.detailedContent.prerequisites" class="prereq-item-full">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+              {{ prereq }}
+            </span>
+          </div>
+        </section>
+
+        <!-- Key Concepts -->
+        <section class="content-section-full" *ngIf="selectedSubTechnology.detailedContent.keyConcepts">
+          <h2 class="section-title-full">Key Concepts</h2>
+          <div class="concepts-grid-full">
+            <div *ngFor="let concept of selectedSubTechnology.detailedContent.keyConcepts" class="concept-card-full">
+              <div class="concept-dot-full"></div>
+              <span class="concept-text-full">{{ concept }}</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- Topics -->
+        <section class="content-section-full" *ngIf="selectedSubTechnology.detailedContent?.topics">
+          <h2 class="section-title-full">Topics</h2>
+          <div class="topics-grid-full">
+            <a
+              *ngFor="let topic of selectedSubTechnology.detailedContent.topics; let index = index"
+              routerLink="/topic/{{ technology.id }}/{{ selectedSubTechnology.id }}/{{ index }}"
+              class="topic-card-full"
+              style="text-decoration: none; color: inherit;">
+              <h3 class="topic-title-full">{{ topic.title }}</h3>
+              <p class="topic-description-full">{{ topic.description }}</p>
+              <div *ngIf="topic.subTopics" class="sub-topics-full">
+                <span *ngFor="let subTopic of topic.subTopics" class="sub-topic-tag-full">{{ subTopic }}</span>
+              </div>
+              <div class="topic-learn-more">Learn More →</div>
+            </a>
+          </div>
+        </section>
+
+        <!-- Videos -->
+        <section class="content-section-full" *ngIf="selectedSubTechnology.videos">
+          <h2 class="section-title-full">Video Lessons</h2>
+          <div class="videos-grid-full">
+            <div *ngFor="let video of selectedSubTechnology.videos" class="video-card-full">
+              <div class="video-icon-full">▶️</div>
+              <div class="video-info-full">
+                <h4 class="video-title-full">{{ video.title }}</h4>
+                <p class="video-channel-full">{{ video.channel }}</p>
+              </div>
+              <a href="{{ video.url }}" target="_blank" rel="noopener" class="video-link-full">Watch Video →</a>
+            </div>
+          </div>
+        </section>
+
+        <!-- Practical Projects -->
+        <section class="content-section-full" *ngIf="selectedSubTechnology.detailedContent.practicalProjects">
+          <h2 class="section-title-full">Practical Projects</h2>
+          <div class="projects-grid-full">
+            <div *ngFor="let project of selectedSubTechnology.detailedContent.practicalProjects" class="project-card-full">
+              <div class="project-header-full">
+                <h4 class="project-title-full">{{ project.title }}</h4>
+                <span class="project-difficulty-full">{{ project.difficulty }}</span>
+              </div>
+              <p class="project-description-full">{{ project.description }}</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Additional Resources -->
+        <section class="content-section-full" *ngIf="selectedSubTechnology.detailedContent.resources">
+          <h2 class="section-title-full">Additional Resources</h2>
+          <div class="resources-grid-full">
+            <div *ngFor="let resource of selectedSubTechnology.detailedContent.resources" class="resource-card-full">
+              <div class="resource-icon-full">{{ getResourceIcon(resource.type) }}</div>
+              <div class="resource-info-full">
+                <h4 class="resource-title-full">{{ resource.title }}</h4>
+                <span class="resource-type-full">{{ resource.type }}</span>
+                <p class="resource-description-full" *ngIf="resource.description">{{ resource.description }}</p>
+                <a href="{{ resource.url }}" target="_blank" rel="noopener" class="resource-link-full">View Resource →</a>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Learning Tools -->
+        <section class="learning-tools-section-full">
+          <h2 class="tools-title-full">Learning Tools</h2>
+          <div class="tools-grid-full">
+            <button type="button" class="tool-btn-full" routerLink="/notes/{{ technology.id }}">
+              <span class="tool-icon-full">📝</span>
+              <span class="tool-label-full">Take Notes</span>
+            </button>
+            <button type="button" class="tool-btn-full" routerLink="/quiz/{{ selectedSubTechnology.id }}">
+              <span class="tool-icon-full">❓</span>
+              <span class="tool-label-full">Take Quiz</span>
+            </button>
+          </div>
+        </section>
+
+        <!-- Progress Actions -->
+        <section class="actions-section-full">
+          <h2 class="actions-title-full">Your Progress</h2>
+          <div class="actions-grid-full">
+            <button type="button" class="action-btn-full" (click)="markAsComplete(selectedSubTechnology)">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 16.17L4 9H9"></path>
+                <path d="M21 12v5a2 2 0 0 1 2-2h10a2 2 0 0 1 2z"></path>
+              </svg>
+              {{ selectedSubTechnology.completed ? 'Mark as Incomplete' : 'Mark as Complete' }}
+            </button>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <!-- Show module grid when no subTechnologyId -->
+    <div *ngIf="!subTechnologyId">
+      <header class="technology-header-full">
+        <button type="button" class="back-btn-full" (click)="backToRoadmaps()">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 12H5M12 19l-7 7 7-7"></path>
+          </svg>
+          Back to Roadmaps
+        </button>
+
+        <div class="tech-info-full">
+          <div class="technology-badge-full">{{ technology.category }}</div>
+          <h1 class="technology-title-full">{{ technology.technology }}</h1>
+          <p class="technology-description-full">{{ technology.overview }}</p>
+          <div class="level-badges-full">
+            <span *ngFor="let level of technology.levels" class="level-tag-full">{{ level }}</span>
+          </div>
+        </div>
+      </header>
+
+      <main class="technology-main-full">
+        <section class="modules-section-full">
+          <h2 class="section-title-full">Learning Modules</h2>
+          <div class="modules-grid-full">
+            <div
+              class="module-card-full"
+              *ngFor="let sub of technology.subTechnologies"
+              [class.completed]="sub.completed"
+              routerLink="/roadmaps/{{ technology.id }}/{{ sub.id }}">
+              <div class="module-header-full">
+                <div class="module-number-full">{{ technology.subTechnologies.indexOf(sub) + 1 }}</div>
+                <div class="module-status-full">
+                  <svg *ngIf="sub.completed" class="check-icon-full" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20 6L9 17l-5-5"></path>
+                  </svg>
+                  <span *ngIf="!sub.completed" class="status-text">Start Learning</span>
+                  <span *ngIf="sub.completed" class="status-text completed">Completed</span>
+                </div>
+              </div>
+              <div class="module-body-full">
+                <h3 class="module-title-full">{{ sub.title }}</h3>
+                <p class="module-description-full">{{ sub.description }}</p>
+                <div class="module-meta-full">
+                  <span class="meta-item-full">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="12" cy="12" r="10"></circle>
+                    </svg>
+                    {{ sub.detailedContent?.estimatedTime || 'Flexible' }}
+                  </span>
+                  <span class="meta-item-full">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M9 12v5a2 2 0 0 1 2-2v3h8"></path>
+                    </svg>
+                    {{ sub.detailedContent?.difficulty || 'Beginner' }}
+                  </span>
+                </div>
+              </div>
+              <div class="module-footer-full">
+                <button class="module-action-btn-full">View Details →</button>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <ng-template #loadingState>
+    <div class="loading-state-full">
+      <div class="loading-spinner-full"></div>
+      <p>Loading learning path...</p>
+    </div>
+  </ng-template>
+</div>

@@ -1,0 +1,214 @@
+<div class="forum-topic-container" *ngIf="forum">
+  <!-- Back Button -->
+  <button (click)="goBack()" class="back-btn">← Back to Forums</button>
+
+  <!-- Forum Header -->
+  <div class="forum-header">
+    <div class="forum-meta-row">
+      <span class="forum-category" [style.color]="getCategoryColor(forum.category)">
+        {{ forum.category }}
+      </span>
+      <span *ngIf="forum.isPinned" class="pinned-badge">📌 Pinned</span>
+      <span *ngIf="forum.isLocked" class="locked-badge">🔒 Locked</span>
+    </div>
+
+    <h1 class="forum-title">
+      {{ forum.title }}
+    </h1>
+
+    <div class="forum-tags" *ngIf="forum.tags.length > 0">
+      <span *ngFor="let tag of forum.tags" class="tag">{{ tag }}</span>
+    </div>
+
+    <div class="forum-stats">
+      <span class="stat">
+        <span>💬</span> {{ forum.replyCount }} replies
+      </span>
+      <span class="stat">
+        <span>👁️</span> {{ forum.viewCount }} views
+      </span>
+      <span class="stat">
+        <span>📅</span> {{ formatTimeAgo(forum.createdAt) }}
+      </span>
+    </div>
+
+    <div class="forum-author" (click)="goToUserProfile(forum.createdBy.username || '')">
+      <img *ngIf="forum.createdBy.avatar" [src]="'http://localhost:3000/uploads/' + forum.createdBy.avatar" class="author-avatar" />
+      <span class="author-avatar-placeholder" *ngIf="!forum.createdBy.avatar">
+        {{ forum.createdBy.firstName.charAt(0) || '?' }}
+      </span>
+      <div class="author-info">
+        <span class="author-name">
+          {{ forum.createdBy.firstName || '' }} {{ forum.createdBy.lastName || '' }}
+        </span>
+        <span class="author-username">@{{ forum.createdBy.username || '' }}</span>
+      </div>
+    </div>
+
+    <div class="forum-actions">
+      <button (click)="togglePin(forum._id)" class="action-btn">
+        {{ forum.isPinned ? '📌 Unpin' : '📌 Pin' }}
+      </button>
+      <button (click)="toggleLock(forum._id)" class="action-btn">
+        {{ forum.isLocked ? '🔓 Unlock' : '🔒 Lock' }}
+      </button>
+    </div>
+
+    <p class="forum-description" *ngIf="forum.description">
+      {{ forum.description }}
+    </p>
+  </div>
+
+  <!-- Reply Form -->
+  <div class="reply-section" *ngIf="!forum.isLocked">
+    <h3>Add a Reply</h3>
+    <div class="reply-form">
+      <textarea
+        [(ngModel)]="newReplyContent"
+        placeholder="Share your thoughts..."
+        rows="4"
+        class="reply-textarea"
+      ></textarea>
+      <button (click)="submitReply()" [disabled]="!newReplyContent.trim()" class="submit-reply-btn">
+        Post Reply
+      </button>
+    </div>
+  </div>
+
+  <!-- Locked Message -->
+  <div *ngIf="forum.isLocked" class="locked-message">
+    🔒 This discussion is locked and no longer accepting new replies
+  </div>
+
+  <!-- Replies -->
+  <div class="replies-section">
+    <h3>Replies ({{ totalReplies }})</h3>
+
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="loading-state">
+      <div class="spinner"></div>
+      <p>Loading replies...</p>
+    </div>
+
+    <!-- Replies List -->
+    <div *ngIf="!isLoading" class="replies-list">
+      <!-- Top-level replies -->
+      <div *ngFor="let reply of replies" class="reply-thread">
+        <div class="reply-card" [class.accepted-answer]="reply.isAcceptedAnswer">
+          <!-- Accepted Answer Badge -->
+          <div *ngIf="reply.isAcceptedAnswer" class="accepted-badge">
+            ✓ Accepted Answer
+          </div>
+
+          <div class="reply-header">
+            <div class="reply-author" (click)="goToUserProfile(reply.user.username)">
+              <img *ngIf="reply.user.avatar" [src]="'http://localhost:3000/uploads/' + reply.user.avatar" class="author-avatar" />
+              <span class="author-avatar-placeholder" *ngIf="!reply.user.avatar">
+                {{ reply.user.firstName.charAt(0) }}
+              </span>
+              <div class="author-info">
+                <span class="author-name">
+                  {{ reply.user.firstName }} {{ reply.user.lastName }}
+                </span>
+                <span class="reply-time">{{ formatTimeAgo(reply.createdAt) }}</span>
+                <span *ngIf="reply.isEdited" class="edited-indicator">(edited)</span>
+              </div>
+            </div>
+
+            <div class="reply-actions">
+              <button (click)="likeReply(reply)" class="like-btn" [class.liked]="reply.isLiked">
+                <span>{{ reply.isLiked ? '❤️' : '🤍' }}</span>
+                {{ reply.likesCount }}
+              </button>
+              <button *ngIf="!forum.isLocked" (click)="acceptAnswer(reply)" class="accept-btn">
+                ✓ Accept
+              </button>
+            </div>
+          </div>
+
+          <div class="reply-content">
+            {{ reply.content }}
+          </div>
+
+          <div class="reply-footer" *ngIf="!forum.isLocked && reply.depth < 5">
+            <button (click)="showReplyFormFor(reply)" class="reply-to-btn">
+              ↳ Reply
+            </button>
+          </div>
+
+          <!-- Nested Replies Form -->
+          <div *ngIf="showReplyForm && replyingTo?._id === reply._id" class="nested-reply-form">
+            <textarea
+              [(ngModel)]="newReplyContent"
+              placeholder="Write a reply..."
+              rows="3"
+              class="reply-textarea"
+            ></textarea>
+            <div class="nested-reply-actions">
+              <button (click)="submitReply()" [disabled]="!newReplyContent.trim()" class="submit-reply-btn">
+                Reply
+              </button>
+              <button (click)="resetReplyForm()" class="cancel-reply-btn">Cancel</button>
+            </div>
+          </div>
+
+          <!-- Nested Replies -->
+          <div *ngIf="getRepliesForThread(reply).length > 0" class="nested-replies">
+            <div *ngFor="let nestedReply of getRepliesForThread(reply)" class="nested-reply">
+              <div class="reply-card nested" [class.accepted-answer]="nestedReply.isAcceptedAnswer">
+                <div *ngIf="nestedReply.isAcceptedAnswer" class="accepted-badge">
+                  ✓ Accepted Answer
+                </div>
+
+                <div class="reply-header">
+                  <div class="reply-author" (click)="goToUserProfile(nestedReply.user.username)">
+                    <img *ngIf="nestedReply.user.avatar" [src]="'http://localhost:3000/uploads/' + nestedReply.user.avatar" class="author-avatar" />
+                    <span class="author-avatar-placeholder" *ngIf="!nestedReply.user.avatar">
+                      {{ nestedReply.user.firstName.charAt(0) }}
+                    </span>
+                    <div class="author-info">
+                      <span class="author-name">
+                        {{ nestedReply.user.firstName }} {{ nestedReply.user.lastName }}
+                      </span>
+                      <span class="reply-time">{{ formatTimeAgo(nestedReply.createdAt) }}</span>
+                      <span *ngIf="nestedReply.isEdited" class="edited-indicator">(edited)</span>
+                    </div>
+                  </div>
+
+                  <div class="reply-actions">
+                    <button (click)="likeReply(nestedReply)" class="like-btn" [class.liked]="nestedReply.isLiked">
+                      <span>{{ nestedReply.isLiked ? '❤️' : '🤍' }}</span>
+                      {{ nestedReply.likesCount }}
+                    </button>
+                  </div>
+                </div>
+
+                <div class="reply-content">
+                  {{ nestedReply.content }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Empty State -->
+      <div *ngIf="replies.length === 0 && !isLoading" class="empty-replies">
+        <span class="empty-icon">💬</span>
+        <p>No replies yet. Be the first to share your thoughts!</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Loading State for Forum -->
+<div *ngIf="!forum && isLoading" class="loading-container">
+  <div class="spinner"></div>
+  <p>Loading discussion...</p>
+</div>
+
+<!-- Error State -->
+<div *ngIf="errorMessage" class="error-container">
+  <p>{{ errorMessage }}</p>
+  <button (click)="goBack()" class="back-btn">← Back to Forums</button>
+</div>

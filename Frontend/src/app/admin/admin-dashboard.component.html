@@ -1,0 +1,393 @@
+<div class="admin-dashboard">
+  <!-- Admin Navigation -->
+  <div class="admin-nav">
+    <h2>Admin Dashboard</h2>
+    <div class="nav-tabs">
+      <button
+        (click)="setTab('dashboard')"
+        [class.active]="currentTab === 'dashboard'"
+        class="nav-tab"
+      >
+        📊 Dashboard
+      </button>
+      <button
+        (click)="setTab('users')"
+        [class.active]="currentTab === 'users'"
+        class="nav-tab"
+      >
+        👥 Users
+      </button>
+      <button
+        (click)="setTab('content')"
+        [class.active]="currentTab === 'content'"
+        class="nav-tab"
+      >
+        📚 Content
+      </button>
+      <button
+        (click)="setTab('moderation')"
+        [class.active]="currentTab === 'moderation'"
+        class="nav-tab"
+      >
+        🔒 Moderation
+      </button>
+      <button
+        (click)="setTab('logs')"
+        [class.active]="currentTab === 'logs'"
+        class="nav-tab"
+      >
+        📋 Logs
+      </button>
+    </div>
+  </div>
+
+  <!-- Dashboard Tab -->
+  <div *ngIf="currentTab === 'dashboard'" class="dashboard-content">
+    <div *ngIf="isLoadingStats" class="loading-state">
+      <div class="spinner"></div>
+      <p>Loading statistics...</p>
+    </div>
+
+    <div *ngIf="!isLoadingStats && stats" class="stats-grid">
+      <!-- User Statistics -->
+      <div class="stat-card">
+        <div class="stat-header">
+          <span class="stat-icon">👥</span>
+          <h3>User Statistics</h3>
+        </div>
+        <div class="stat-body">
+          <div class="stat-row">
+            <span class="stat-label">Total Users</span>
+            <span class="stat-value">{{ stats.users.total || 0 }}</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Active Users</span>
+            <span class="stat-value active">{{ stats.users.active || 0 }}</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">New Today</span>
+            <span class="stat-value success">+{{ stats.users.newToday || 0 }}</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">New This Week</span>
+            <span class="stat-value success">+{{ stats.users.newThisWeek || 0 }}</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">New This Month</span>
+            <span class="stat-value success">+{{ stats.users.newThisMonth || 0 }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Roadmap Statistics -->
+      <div class="stat-card">
+        <div class="stat-header">
+          <span class="stat-icon">📚</span>
+          <h3>Roadmap Statistics</h3>
+        </div>
+        <div class="stat-body">
+          <div class="stat-row">
+            <span class="stat-label">Total Roadmaps</span>
+            <span class="stat-value">{{ stats.roadmaps.total || 0 }}</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Completed</span>
+            <span class="stat-value success">{{ stats.roadmaps.completed || 0 }}</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Completion Rate</span>
+            <span class="stat-value">{{ stats.roadmaps.completionRate || '0' }}%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Lesson Statistics -->
+      <div class="stat-card">
+        <div class="stat-header">
+          <span class="stat-icon">📖</span>
+          <h3>Lesson Statistics</h3>
+        </div>
+        <div class="stat-body">
+          <div class="stat-row">
+            <span class="stat-label">Total Lessons</span>
+            <span class="stat-value">{{ stats.lessons.total || 0 }}</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Completed</span>
+            <span class="stat-value success">{{ stats.lessons.completed || 0 }}</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Completion Rate</span>
+            <span class="stat-value">{{ stats.lessons.completionRate || '0' }}%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Community Statistics -->
+      <div class="stat-card">
+        <div class="stat-header">
+          <span class="stat-icon">💬</span>
+          <h3>Community Statistics</h3>
+        </div>
+        <div class="stat-body">
+          <div class="stat-row">
+            <span class="stat-label">Total Posts</span>
+            <span class="stat-value">{{ stats.community.totalPosts || 0 }}</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Total Forums</span>
+            <span class="stat-value">{{ stats.community.totalForums || 0 }}</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Total Replies</span>
+            <span class="stat-value">{{ stats.community.totalReplies || 0 }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Users Tab -->
+  <div *ngIf="currentTab === 'users'" class="users-content">
+    <div class="users-header">
+      <div class="search-bar">
+        <input
+          type="text"
+          [(ngModel)]="searchQuery"
+          (keyup.enter)="searchUsers()"
+          placeholder="Search users..."
+          class="search-input"
+        />
+        <button (click)="searchUsers()" class="search-btn">🔍</button>
+      </div>
+
+      <div class="filter-bar">
+        <select [(ngModel)]="selectedRole" (change)="searchUsers()" class="filter-select">
+          <option value="">All Users</option>
+          <option value="admin">Admins Only</option>
+          <option value="user">Regular Users Only</option>
+        </select>
+      </div>
+    </div>
+
+    <div *ngIf="isLoadingUsers" class="loading-state">
+      <div class="spinner"></div>
+      <p>Loading users...</p>
+    </div>
+
+    <div *ngIf="!isLoadingUsers" class="users-table">
+      <table>
+        <thead>
+          <tr>
+            <th>User</th>
+            <th>Status</th>
+            <th>Stats</th>
+            <th>Joined</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let user of users">
+            <td>
+              <div class="user-cell">
+                <img *ngIf="user.avatar" [src]="'http://localhost:3000/uploads/' + user.avatar" class="user-avatar" />
+                <span class="user-avatar-placeholder" *ngIf="!user.avatar">
+                  {{ user.firstName.charAt(0) }}
+                </span>
+                <div class="user-info">
+                  <span class="user-name">{{ user.firstName }} {{ user.lastName }}</span>
+                  <span class="user-email">{{ user.email }}</span>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="status-badges">
+                <span *ngIf="user.isAdmin" class="badge admin">Admin</span>
+                <span *ngIf="user.isBanned" class="badge banned">Banned</span>
+                <span *ngIf="!user.isAdmin && !user.isBanned" class="badge active">Active</span>
+              </div>
+            </td>
+            <td>
+              <div class="user-stats">
+                <span>🔥 {{ user.learningStreak }}</span>
+                <span>⭐ {{ user.totalPoints }}</span>
+              </div>
+            </td>
+            <td>{{ formatTimeAgo(user.createdAt) }}</td>
+            <td>
+              <div class="action-buttons">
+                <button (click)="updateAdminStatus(user._id)" class="action-btn role">
+                  {{ user.isAdmin ? '👤 User' : '👑 Admin' }}
+                </button>
+                <button (click)="toggleBan(user._id)" class="action-btn ban">
+                  {{ user.isBanned ? '✅ Unban' : '🚫 Ban' }}
+                </button>
+                <button (click)="deleteUser(user._id)" class="action-btn delete">🗑️</button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Pagination -->
+      <div class="pagination" *ngIf="users.length > 0">
+        <button
+          (click)="loadPreviousUserPage()"
+          [disabled]="userPagination.page === 1"
+          class="pagination-btn"
+        >
+          ← Previous
+        </button>
+        <span class="page-info">
+          Page {{ userPagination.page }} of {{ userPagination.pages }}
+        </span>
+        <button
+          (click)="loadNextUserPage()"
+          [disabled]="userPagination.page === userPagination.pages"
+          class="pagination-btn"
+        >
+          Next →
+        </button>
+      </div>
+
+      <!-- Empty State -->
+      <div *ngIf="users.length === 0" class="empty-state">
+        <span class="empty-icon">👥</span>
+        <h3>No users found</h3>
+        <p>Try adjusting your search or filters</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Content Tab -->
+  <div *ngIf="currentTab === 'content'" class="content-management">
+    <div class="content-placeholder">
+      <span class="placeholder-icon">📚</span>
+      <h3>Content Management</h3>
+      <p>Manage technologies, sub-technologies, and learning content</p>
+      <button class="action-btn">Coming Soon</button>
+    </div>
+  </div>
+
+  <!-- Moderation Tab -->
+  <div *ngIf="currentTab === 'moderation'" class="moderation-content">
+    <div class="moderation-header">
+      <h3>Flagged Content</h3>
+      <select [(ngModel)]="contentType" (change)="loadFlaggedContent()" class="filter-select">
+        <option value="all">All Content</option>
+        <option value="posts">Posts</option>
+        <option value="forums">Forums</option>
+        <option value="replies">Replies</option>
+      </select>
+    </div>
+
+    <div *ngIf="isLoadingFlagged" class="loading-state">
+      <div class="spinner"></div>
+      <p>Loading flagged content...</p>
+    </div>
+
+    <div *ngIf="!isLoadingFlagged" class="flagged-list">
+      <div *ngFor="let content of flaggedContent" class="flagged-item">
+        <div class="flagged-type">
+          <span class="type-badge">{{ content.type }}</span>
+        </div>
+        <div class="flagged-content">
+          <h4>{{ content.content || content.title }}</h4>
+          <p class="flagged-meta">
+            <span>👤 {{ content.user?.firstName }} {{ content.user?.lastName }}</span>
+            <span>📅 {{ formatTimeAgo(content.createdAt || content.flaggedAt) }}</span>
+          </p>
+        </div>
+        <div class="flagged-actions">
+          <button (click)="moderateContent(content._id, content.type)" class="action-btn delete">
+            🗑️ Remove
+          </button>
+        </div>
+      </div>
+
+      <!-- Empty State -->
+      <div *ngIf="flaggedContent.length === 0" class="empty-state">
+        <span class="empty-icon">✅</span>
+        <h3>No flagged content</h3>
+        <p>All content is clean and safe!</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Logs Tab -->
+  <div *ngIf="currentTab === 'logs'" class="logs-content">
+    <div class="logs-header">
+      <h3>Admin Activity Logs</h3>
+      <div class="log-filters">
+        <input
+          type="text"
+          [(ngModel)]="logFilters.action"
+          placeholder="Filter by action..."
+          class="filter-input"
+        />
+        <input
+          type="text"
+          [(ngModel)]="logFilters.targetType"
+          placeholder="Filter by target..."
+          class="filter-input"
+        />
+        <button (click)="loadAdminLogs(1)" class="filter-btn">Apply</button>
+      </div>
+    </div>
+
+    <div *ngIf="isLoadingLogs" class="loading-state">
+      <div class="spinner"></div>
+      <p>Loading logs...</p>
+    </div>
+
+    <div *ngIf="!isLoadingLogs" class="logs-list">
+      <div *ngFor="let log of adminLogs" class="log-entry">
+        <div class="log-icon" [style.color]="getActionColor(log.action)">
+          {{ getActionIcon(log.action) }}
+        </div>
+        <div class="log-details">
+          <div class="log-header">
+            <span class="log-action">{{ formatAction(log.action) }}</span>
+            <span class="log-time">{{ formatTimeAgo(log.createdAt) }}</span>
+          </div>
+          <p class="log-description">{{ log.description }}</p>
+          <p class="log-admin">
+            <span>👤 {{ log.admin.firstName }} {{ log.admin.lastName }}</span>
+            <span class="admin-badge">@{{ log.admin.username }}</span>
+          </p>
+          <div *ngIf="log.status !== 'SUCCESS'" class="log-status error">
+            ⚠️ {{ log.status }}: {{ log.errorMessage || 'Unknown error' }}
+          </div>
+        </div>
+      </div>
+
+      <!-- Pagination -->
+      <div class="pagination" *ngIf="adminLogs.length > 0">
+        <button
+          (click)="loadPreviousLogPage()"
+          [disabled]="logPagination.page === 1"
+          class="pagination-btn"
+        >
+          ← Previous
+        </button>
+        <span class="page-info">
+          Page {{ logPagination.page }} of {{ logPagination.pages }}
+        </span>
+        <button
+          (click)="loadNextLogPage()"
+          [disabled]="logPagination.page === logPagination.pages"
+          class="pagination-btn"
+        >
+          Next →
+        </button>
+      </div>
+
+      <!-- Empty State -->
+      <div *ngIf="adminLogs.length === 0" class="empty-state">
+        <span class="empty-icon">📋</span>
+        <h3>No logs found</h3>
+        <p>Start performing admin actions to see logs here</p>
+      </div>
+    </div>
+  </div>
+</div>

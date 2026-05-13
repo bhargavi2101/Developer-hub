@@ -1,0 +1,107 @@
+<div class="public-profile-container">
+  <div class="header-section">
+    <button class="back-btn" (click)="goBack()">
+      ← Back to Roadmaps
+    </button>
+  </div>
+
+  <div *ngIf="isLoading" class="loading">
+    <div class="loading-spinner"></div>
+    <p>Loading profile...</p>
+  </div>
+
+  <div *ngIf="errorMessage" class="error-message">
+    <div class="error-icon">⚠️</div>
+    <h3>{{ errorMessage }}</h3>
+    <button class="btn btn-primary" (click)="goBack()">Go Back</button>
+  </div>
+
+  <div *ngIf="userProfile && !isLoading" class="profile-content">
+    <!-- Profile Header -->
+    <div class="profile-header">
+      <div class="avatar-large">
+        <img *ngIf="userProfile.avatar" [src]="userProfile.avatar" [alt]="userProfile.username">
+        <div *ngIf="!userProfile.avatar" class="avatar-placeholder-large">
+          {{ getProfileInitials(userProfile) }}
+        </div>
+      </div>
+      <div class="user-info">
+        <h1>{{ userProfile.firstName }} {{ userProfile.lastName }}</h1>
+        <p class="username">@{{ userProfile.username }}</p>
+        <p *ngIf="userProfile.bio" class="bio">{{ userProfile.bio }}</p>
+      </div>
+    </div>
+
+    <!-- Profile Details -->
+    <div class="profile-details">
+      <div *ngIf="userProfile.location" class="detail-item">
+        <span class="icon">{{ getLocationIcon() }}</span>
+        <span>{{ userProfile.location }}</span>
+      </div>
+      <div *ngIf="userProfile.website" class="detail-item">
+        <span class="icon">{{ getWebsiteIcon() }}</span>
+        <a [href]="userProfile.website" target="_blank" rel="noopener noreferrer">{{ userProfile.website }}</a>
+      </div>
+      <div *ngIf="userProfile.github" class="detail-item">
+        <span class="icon">{{ getGithubIcon() }}</span>
+        <a [href]="getGithubProfileUrl(userProfile.github)" target="_blank" rel="noopener noreferrer">{{ userProfile.github }}</a>
+      </div>
+      <div *ngIf="userProfile.linkedin" class="detail-item">
+        <span class="icon">{{ getLinkedinIcon() }}</span>
+        <a [href]="getLinkedinProfileUrl(userProfile.linkedin)" target="_blank" rel="noopener noreferrer">{{ userProfile.linkedin }}</a>
+      </div>
+    </div>
+
+    <!-- Skills & Interests -->
+    <div class="skills-section" *ngIf="userProfile.skills && userProfile.skills.length > 0">
+      <h2>Skills</h2>
+      <div class="tags-display">
+        <span class="tag" *ngFor="let skill of userProfile.skills">{{ skill }}</span>
+      </div>
+    </div>
+
+    <div class="interests-section" *ngIf="userProfile.interests && userProfile.interests.length > 0">
+      <h2>Interests</h2>
+      <div class="tags-display">
+        <span class="tag" *ngFor="let interest of userProfile.interests">{{ interest }}</span>
+      </div>
+    </div>
+
+    <div class="goals-section" *ngIf="userProfile.learningGoals && userProfile.learningGoals.length > 0">
+      <h2>Learning Goals</h2>
+      <div class="goals-list">
+        <div class="goal-item" *ngFor="let goal of userProfile.learningGoals">
+          <span class="goal-icon">🎯</span>
+          <span>{{ goal }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Learning Progress -->
+    <div class="roadmaps-section" *ngIf="userRoadmaps.length > 0">
+      <h2>Learning Progress</h2>
+      <div class="roadmaps-grid">
+        <div class="roadmap-card" *ngFor="let roadmap of userRoadmaps" (click)="navigateToRoadmap(roadmap)">
+          <div class="roadmap-header">
+            <h3>{{ roadmap.title }}</h3>
+            <span class="progress-percentage">{{ roadmap.progress }}%</span>
+          </div>
+          <div class="progress-bar-bg">
+            <div class="progress-bar-fill"
+                 [style.width.%]="roadmap.progress"
+                 [style.background-color]="roadmap.color">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="no-roadmaps" *ngIf="userRoadmaps.length === 0">
+      <div class="empty-state">
+        <div class="empty-icon">📚</div>
+        <h3>No active learning paths</h3>
+        <p>This user hasn't started any learning journeys yet.</p>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,236 @@
+<div class="profile-container">
+  <div class="profile-header">
+    <h2>User Profile</h2>
+    <button class="btn btn-primary" *ngIf="!isEditing" (click)="toggleEditMode()">Edit Profile</button>
+  </div>
+
+  <div *ngIf="isLoading" class="loading">Loading...</div>
+
+  <div *ngIf="errorMessage" class="error">{{ errorMessage }}</div>
+
+  <div class="profile-content" *ngIf="!isLoading">
+    <!-- Avatar Section -->
+    <div class="avatar-section">
+      <div class="avatar-upload-container"
+           [class.drag-over]="dragOver"
+           (dragover)="onDragOver($event)"
+           (dragleave)="onDragLeave($event)"
+           (drop)="onDrop($event)">
+        <div class="avatar">
+          <img *ngIf="userProfile.avatar" [src]="userProfile.avatar" alt="Avatar">
+          <div *ngIf="!userProfile.avatar" class="avatar-placeholder">
+            {{ userProfile.firstName ? userProfile.firstName[0] : userProfile.username[0] }}
+          </div>
+        </div>
+        <input type="file"
+               id="avatarInput"
+               (change)="onFileSelected($event)"
+               accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+               style="display: none;">
+        <label for="avatarInput" class="upload-overlay">
+          <span *ngIf="!isUploading">📷 Change Avatar</span>
+          <span *ngIf="isUploading">Uploading... {{ uploadProgress }}%</span>
+        </label>
+      </div>
+      <div class="avatar-name">
+        <h3>{{ userProfile.firstName }} {{ userProfile.lastName }}</h3>
+        <p>@{{ userProfile.username }}</p>
+      </div>
+    </div>
+
+    <!-- Profile Information -->
+    <div class="profile-info">
+      <div class="info-group">
+        <label>Username:</label>
+        <span *ngIf="!isEditing">{{ userProfile.username }}</span>
+        <input *ngIf="isEditing"
+               type="text"
+               [(ngModel)]="profileForm.username"
+               placeholder="Username"
+               class="form-input">
+      </div>
+
+      <div class="info-group">
+        <label>Email:</label>
+        <span *ngIf="!isEditing">{{ userProfile.email }}</span>
+        <input *ngIf="isEditing"
+               type="email"
+               [(ngModel)]="profileForm.email"
+               placeholder="Email"
+               class="form-input">
+      </div>
+
+      <div class="info-group">
+        <label>First Name:</label>
+        <span *ngIf="!isEditing">{{ userProfile.firstName || 'Not set' }}</span>
+        <input *ngIf="isEditing"
+               type="text"
+               [(ngModel)]="profileForm.firstName"
+               placeholder="First Name"
+               class="form-input">
+      </div>
+
+      <div class="info-group">
+        <label>Last Name:</label>
+        <span *ngIf="!isEditing">{{ userProfile.lastName || 'Not set' }}</span>
+        <input *ngIf="isEditing"
+               type="text"
+               [(ngModel)]="profileForm.lastName"
+               placeholder="Last Name"
+               class="form-input">
+      </div>
+
+      <div class="info-group">
+        <label>Bio:</label>
+        <p *ngIf="!isEditing">{{ userProfile.bio || 'No bio yet' }}</p>
+        <textarea *ngIf="isEditing"
+                  [(ngModel)]="profileForm.bio"
+                  placeholder="Tell us about yourself..."
+                  class="form-textarea"
+                  rows="4"></textarea>
+      </div>
+
+      <div class="info-group">
+        <label>Location:</label>
+        <span *ngIf="!isEditing">{{ userProfile.location || 'Not set' }}</span>
+        <input *ngIf="isEditing"
+               type="text"
+               [(ngModel)]="profileForm.location"
+               placeholder="City, Country"
+               class="form-input">
+      </div>
+
+      <div class="info-group">
+        <label>Website:</label>
+        <span *ngIf="!isEditing">{{ userProfile.website || 'Not set' }}</span>
+        <input *ngIf="isEditing"
+               type="url"
+               [(ngModel)]="profileForm.website"
+               placeholder="https://yourwebsite.com"
+               class="form-input">
+      </div>
+
+      <div class="info-group">
+        <label>GitHub:</label>
+        <span *ngIf="!isEditing">{{ userProfile.github || 'Not set' }}</span>
+        <input *ngIf="isEditing"
+               type="text"
+               [(ngModel)]="profileForm.github"
+               placeholder="username"
+               class="form-input">
+      </div>
+
+      <div class="info-group">
+        <label>LinkedIn:</label>
+        <span *ngIf="!isEditing">{{ userProfile.linkedin || 'Not set' }}</span>
+        <input *ngIf="isEditing"
+               type="text"
+               [(ngModel)]="profileForm.linkedin"
+               placeholder="username"
+               class="form-input">
+      </div>
+
+      <div class="info-group">
+        <label>Skills:</label>
+        <div *ngIf="!isEditing" class="tags-display">
+          <span class="tag" *ngFor="let skill of userProfile.skills">{{ skill }}</span>
+          <span *ngIf="!userProfile.skills || userProfile.skills.length === 0">No skills listed</span>
+        </div>
+        <div *ngIf="isEditing" class="tags-input">
+          <div class="tags-container">
+            <span class="tag editable" *ngFor="let skill of profileForm.skills; let i = index">
+              {{ skill }}
+              <span class="remove-tag" (click)="removeSkill(i)">×</span>
+            </span>
+          </div>
+          <button class="btn-add-tag" (click)="addSkill()">+ Add Skill</button>
+        </div>
+      </div>
+
+      <div class="info-group">
+        <label>Interests:</label>
+        <div *ngIf="!isEditing" class="tags-display">
+          <span class="tag" *ngFor="let interest of userProfile.interests">{{ interest }}</span>
+          <span *ngIf="!userProfile.interests || userProfile.interests.length === 0">No interests listed</span>
+        </div>
+        <div *ngIf="isEditing" class="tags-input">
+          <div class="tags-container">
+            <span class="tag editable" *ngFor="let interest of profileForm.interests; let i = index">
+              {{ interest }}
+              <span class="remove-tag" (click)="removeInterest(i)">×</span>
+            </span>
+          </div>
+          <button class="btn-add-tag" (click)="addInterest()">+ Add Interest</button>
+        </div>
+      </div>
+
+      <div class="info-group">
+        <label>Learning Goals:</label>
+        <div *ngIf="!isEditing" class="tags-display">
+          <span class="tag" *ngFor="let goal of userProfile.learningGoals">{{ goal }}</span>
+          <span *ngIf="!userProfile.learningGoals || userProfile.learningGoals.length === 0">No learning goals set</span>
+        </div>
+        <div *ngIf="isEditing" class="tags-input">
+          <div class="tags-container">
+            <span class="tag editable" *ngFor="let goal of profileForm.learningGoals; let i = index">
+              {{ goal }}
+              <span class="remove-tag" (click)="removeLearningGoal(i)">×</span>
+            </span>
+          </div>
+          <button class="btn-add-tag" (click)="addLearningGoal()">+ Add Goal</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit Actions -->
+    <div class="edit-actions" *ngIf="isEditing">
+      <button class="btn btn-success" (click)="saveProfile()" [disabled]="isLoading">
+        Save Changes
+      </button>
+      <button class="btn btn-secondary" (click)="cancelEdit()">Cancel</button>
+    </div>
+
+    <!-- Change Password Section -->
+    <div class="password-section">
+      <h3>Security</h3>
+      <button class="btn btn-outline" (click)="togglePasswordForm()">
+        {{ showPasswordForm ? 'Cancel' : 'Change Password' }}
+      </button>
+
+      <div *ngIf="showPasswordForm" class="password-form">
+        <div *ngIf="passwordError" class="error">{{ passwordError }}</div>
+
+        <div class="form-group">
+          <label>Current Password:</label>
+          <input type="password"
+                 [(ngModel)]="passwordForm.currentPassword"
+                 placeholder="Current password"
+                 class="form-input">
+        </div>
+
+        <div class="form-group">
+          <label>New Password:</label>
+          <input type="password"
+                 [(ngModel)]="passwordForm.newPassword"
+                 placeholder="New password (min 6 characters)"
+                 class="form-input">
+        </div>
+
+        <div class="form-group">
+          <label>Confirm New Password:</label>
+          <input type="password"
+                 [(ngModel)]="passwordForm.confirmPassword"
+                 placeholder="Confirm new password"
+                 class="form-input">
+        </div>
+
+        <div class="password-actions">
+          <button class="btn btn-success" (click)="changePassword()" [disabled]="isLoading">
+            Change Password
+          </button>
+          <button class="btn btn-secondary" (click)="togglePasswordForm()">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

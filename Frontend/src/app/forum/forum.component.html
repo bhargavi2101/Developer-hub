@@ -1,0 +1,180 @@
+<div class="forum-container">
+  <div class="forum-header">
+    <h1>Community Forums</h1>
+    <p class="forum-subtitle">Connect with other learners, ask questions, and share knowledge</p>
+  </div>
+
+  <!-- Search and Filter Bar -->
+  <div class="forum-actions">
+    <div class="search-bar">
+      <input
+        type="text"
+        [(ngModel)]="searchQuery"
+        (keyup.enter)="searchForums(searchQuery)"
+        placeholder="Search discussions..."
+        class="search-input"
+      />
+      <button (click)="searchForums(searchQuery)" class="search-btn">
+        <span>🔍</span>
+      </button>
+    </div>
+
+    <div class="category-filter">
+      <select [(ngModel)]="selectedCategory" class="category-select">
+        <option *ngFor="let category of categories" [value]="category.value">
+          {{ category.label }}
+        </option>
+      </select>
+    </div>
+
+    <button (click)="toggleCreateDialog()" class="create-btn">
+      <span>+</span> New Discussion
+    </button>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-state">
+    <div class="spinner"></div>
+    <p>Loading discussions...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="errorMessage" class="error-state">
+    <p>{{ errorMessage }}</p>
+    <button (click)="loadForums()" class="retry-btn">Retry</button>
+  </div>
+
+  <!-- Forum List -->
+  <div *ngIf="!isLoading && !errorMessage" class="forum-list">
+    <div *ngFor="let forum of getFilteredForums()" class="forum-card">
+      <div class="forum-main">
+        <div class="forum-icon" [style.background-color]="getCategoryColor(forum.category)">
+          <span>{{ forum.category.charAt(0).toUpperCase() }}</span>
+        </div>
+
+        <div class="forum-content">
+          <div class="forum-header-row">
+            <h3 class="forum-title">
+              <span *ngIf="forum.isPinned" class="pinned-icon">📌</span>
+              <span *ngIf="forum.isLocked" class="locked-icon">🔒</span>
+              {{ forum.title }}
+            </h3>
+            <span class="forum-category" [style.color]="getCategoryColor(forum.category)">
+              {{ forum.category }}
+            </span>
+          </div>
+
+          <p class="forum-description">{{ forum.description }}</p>
+
+          <div class="forum-tags" *ngIf="forum.tags.length > 0">
+            <span *ngFor="let tag of forum.tags" class="tag">{{ tag }}</span>
+          </div>
+
+          <div class="forum-meta">
+            <div class="forum-author" (click)="goToUserProfile(forum.createdBy.username)">
+              <img *ngIf="forum.createdBy.avatar" [src]="'http://localhost:3000/uploads/' + forum.createdBy.avatar" class="author-avatar" />
+              <span class="author-avatar-placeholder" *ngIf="!forum.createdBy.avatar">
+                {{ forum.createdBy.firstName.charAt(0) }}
+              </span>
+              <span class="author-name">
+                {{ forum.createdBy.firstName }} {{ forum.createdBy.lastName }}
+              </span>
+            </div>
+
+            <div class="forum-stats">
+              <span class="stat">
+                <span>💬</span> {{ forum.replyCount }} replies
+              </span>
+              <span class="stat">
+                <span>👁️</span> {{ forum.viewCount }} views
+              </span>
+              <span class="stat time">
+                {{ formatTimeAgo(forum.lastReplyAt || forum.createdAt) }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="forum-action">
+        <button (click)="goToForumTopic(forum._id)" class="view-btn">
+          View Discussion →
+        </button>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="getFilteredForums().length === 0" class="empty-state">
+      <span class="empty-icon">💬</span>
+      <h3>No discussions found</h3>
+      <p>Be the first to start a conversation!</p>
+      <button (click)="toggleCreateDialog()" class="create-btn">Start Discussion</button>
+    </div>
+  </div>
+
+  <!-- Create Forum Dialog -->
+  <div *ngIf="showCreateDialog" class="dialog-overlay" (click)="toggleCreateDialog()">
+    <div class="dialog-container" (click)="$event.stopPropagation()">
+      <div class="dialog-header">
+        <h2>Create New Discussion</h2>
+        <button (click)="toggleCreateDialog()" class="close-btn">×</button>
+      </div>
+
+      <div class="dialog-body">
+        <div class="form-group">
+          <label>Title *</label>
+          <input
+            type="text"
+            [(ngModel)]="newForum.title"
+            placeholder="What's your discussion about?"
+            class="form-input"
+          />
+        </div>
+
+        <div class="form-group">
+          <label>Category</label>
+          <select [(ngModel)]="newForum.category" class="form-select">
+            <option value="discussion">Discussion</option>
+            <option value="question">Question</option>
+            <option value="help">Help Needed</option>
+            <option value="showcase">Showcase</option>
+            <option value="resource">Resource</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Description</label>
+          <textarea
+            [(ngModel)]="newForum.description"
+            placeholder="Provide more details about your discussion..."
+            rows="4"
+            class="form-textarea"
+          ></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>Tags</label>
+          <div class="tags-input">
+            <input
+              type="text"
+              (keyup.enter)="addTag($event)"
+              placeholder="Add tags (press Enter)"
+              class="tag-input"
+            />
+            <div class="tags-list">
+              <span *ngFor="let tag of newForum.tags; let i = index" class="tag">
+                {{ tag }}
+                <button (click)="removeTag(i)" class="remove-tag">×</button>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="dialog-footer">
+        <button (click)="toggleCreateDialog()" class="cancel-btn">Cancel</button>
+        <button (click)="createForum()" class="submit-btn">Create Discussion</button>
+      </div>
+    </div>
+  </div>
+</div>

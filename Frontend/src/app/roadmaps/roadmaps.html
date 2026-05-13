@@ -1,0 +1,109 @@
+<div class="hub-wrapper">
+  <nav class="top-nav">
+    <div class="logo" routerLink="/landing">Dev<span>Hub</span></div>
+    <div class="top-links">
+      <a routerLink="/landing">Home</a>
+      <a routerLink="/roadmaps" class="active">Roadmaps</a>
+      <a routerLink="/dashboard">Dashboard</a>
+    </div>
+  </nav>
+
+  <section class="hero">
+    <div class="hero-content">
+      <h1 class="hero-title">Developer Roadmaps</h1>
+      <p class="hero-description">
+        Step by step guides and paths to learn different tools or technologies. Each roadmap is a curated list of the best resources to learn a skill.
+      </p>
+      <div class="hero-stats">
+        <div class="stat-item">
+          <span class="stat-number">30+</span>
+          <span class="stat-label">Technologies</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-number">150+</span>
+          <span class="stat-label">Modules</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-number">500+</span>
+          <span class="stat-label">Resources</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="filter-bar">
+    <div class="level-filter">
+      <button
+        type="button"
+        *ngFor="let level of levels"
+        (click)="setLevel(level)"
+        [class.active]="selectedLevel === level">
+        {{ level }}
+      </button>
+    </div>
+
+    <div class="search-container">
+      <input
+        type="text"
+        class="search-input"
+        placeholder="Search roadmaps..."
+        [value]="searchTerm"
+        (input)="updateSearch($event)">
+      <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"></circle>
+        <path d="m21 21-4.3-4.3"></path>
+      </svg>
+    </div>
+  </section>
+
+  <section class="card-grid" *ngIf="filteredTechnologies.length > 0; else emptyState">
+    <article class="tech-card" *ngFor="let technology of filteredTechnologies">
+      <div class="card-header">
+        <div class="card-meta">
+          <span class="category-badge">{{ technology.category }}</span>
+          <h2 class="card-title">{{ technology.technology }}</h2>
+        </div>
+        <div class="card-actions">
+          <span class="level-badge">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2v20M2 12h20"></path>
+            </svg>
+            {{ technology.levels.join(' • ') }}
+          </span>
+        </div>
+      </div>
+
+      <p class="card-overview">{{ technology.overview }}</p>
+
+      <div class="sub-topics-preview">
+        <div class="sub-topics-label">Topics:</div>
+        <div class="sub-topics-list">
+          <span *ngFor="let sub of technology.subTechnologies | slice:0:4" class="topic-tag">
+            {{ sub.title }}
+          </span>
+          <span *ngIf="technology.subTechnologies.length > 4" class="more-topics">
+            +{{ technology.subTechnologies.length - 4 }} more
+          </span>
+        </div>
+      </div>
+
+      <button type="button" class="open-roadmap-btn" (click)="openTechnology(technology)">
+        <span>Explore Roadmap</span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M5 12h14M12 5l7 7-7 7"></path>
+        </svg>
+      </button>
+    </article>
+  </section>
+
+  <ng-template #emptyState>
+    <div class="empty-state">
+      <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+      <h2>No matching roadmaps found</h2>
+      <p>Try another search term or switch the experience level filter.</p>
+    </div>
+  </ng-template>
+</div>

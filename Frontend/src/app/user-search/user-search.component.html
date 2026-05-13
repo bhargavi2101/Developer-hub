@@ -1,0 +1,159 @@
+<div class="user-search-container">
+  <div class="search-header">
+    <h1>Find Developers</h1>
+    <p class="search-subtitle">Connect with other learners and build your network</p>
+  </div>
+
+  <!-- Search Bar -->
+  <div class="search-section">
+    <div class="search-bar">
+      <input
+        type="text"
+        [(ngModel)]="searchQuery"
+        (keyup.enter)="searchUsers()"
+        placeholder="Search by name, username, or skills..."
+        class="search-input"
+      />
+      <button (click)="searchUsers()" [disabled]="!searchQuery.trim() || searchQuery.trim().length < 2" class="search-btn">
+        <span>🔍</span> Search
+      </button>
+    </div>
+
+    <!-- Advanced Filters -->
+    <div class="filters-section">
+      <div class="filter-group">
+        <label>Skills</label>
+        <input
+          type="text"
+          [(ngModel)]="filters.skills"
+          placeholder="e.g. JavaScript, React"
+          class="filter-input"
+        />
+      </div>
+
+      <div class="filter-group">
+        <label>Location</label>
+        <input
+          type="text"
+          [(ngModel)]="filters.location"
+          placeholder="e.g. San Francisco, USA"
+          class="filter-input"
+        />
+      </div>
+
+      <div class="filter-group checkbox">
+        <label>
+          <input type="checkbox" [(ngModel)]="filters.hasCompletedRoadmaps" />
+          Completed Roadmaps
+        </label>
+      </div>
+
+      <button (click)="clearFilters()" class="clear-filters-btn" *ngIf="filters.skills || filters.location || filters.hasCompletedRoadmaps">
+        Clear Filters
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-state">
+    <div class="spinner"></div>
+    <p>Searching users...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="errorMessage" class="error-state">
+    <p>{{ errorMessage }}</p>
+    <button (click)="loadUsers()" class="retry-btn">Retry</button>
+  </div>
+
+  <!-- Users Grid -->
+  <div *ngIf="!isLoading && !errorMessage" class="users-grid">
+    <div *ngFor="let user of getFilteredUsers()" class="user-card">
+      <div class="user-header">
+        <div class="user-avatar" (click)="goToUserProfile(user.username)">
+          <img *ngIf="user.avatar" [src]="'http://localhost:3000/uploads/' + user.avatar" class="avatar-image" />
+          <span class="avatar-placeholder" *ngIf="!user.avatar">
+            {{ user.firstName.charAt(0) }}
+          </span>
+        </div>
+
+        <div class="user-info">
+          <h3 class="user-name" (click)="goToUserProfile(user.username)">
+            {{ user.firstName }} {{ user.lastName }}
+          </h3>
+          <p class="user-username">@{{ user.username }}</p>
+
+          <div class="user-location" *ngIf="user.location">
+            <span>📍</span> {{ user.location }}
+          </div>
+        </div>
+      </div>
+
+      <p class="user-bio" *ngIf="user.bio">
+        {{ user.bio }}
+      </p>
+
+      <div class="user-skills" *ngIf="user.skills.length > 0">
+        <span *ngFor="let skill of user.skills.slice(0, 5)" class="skill-tag">
+          {{ skill }}
+        </span>
+        <span *ngIf="user.skills.length > 5" class="more-skills">
+          +{{ user.skills.length - 5 }} more
+        </span>
+      </div>
+
+      <div class="user-stats">
+        <div class="stat">
+          <span class="stat-value">{{ user.stats?.completedRoadmaps || user.completedRoadmaps }}</span>
+          <span class="stat-label">Roadmaps</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value">{{ user.stats?.completedLessons || user.completedLessons }}</span>
+          <span class="stat-label">Lessons</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value" [style.color]="getLearningStreakColor(user.stats?.learningStreak || user.learningStreak)">
+            🔥 {{ user.stats?.learningStreak || user.learningStreak }}
+          </span>
+          <span class="stat-label">Streak</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value">⭐ {{ user.stats?.totalPoints || user.totalPoints }}</span>
+          <span class="stat-label">Points</span>
+        </div>
+      </div>
+
+      <div class="user-social-links" *ngIf="user.website || user.github || user.linkedin">
+        <a *ngIf="user.website" [href]="user.website" target="_blank" class="social-link">
+          🌐 Website
+        </a>
+        <a *ngIf="user.github" [href]="'https://github.com/' + user.github" target="_blank" class="social-link">
+          💻 GitHub
+        </a>
+        <a *ngIf="user.linkedin" [href]="'https://linkedin.com/in/' + user.linkedin" target="_blank" class="social-link">
+          💼 LinkedIn
+        </a>
+      </div>
+
+      <div class="user-actions">
+        <button
+          (click)="user.isFollowing ? unfollowUser(user._id) : followUser(user._id)"
+          [class.following]="user.isFollowing"
+          class="follow-btn"
+        >
+          {{ user.isFollowing ? '✓ Following' : '+ Follow' }}
+        </button>
+        <button (click)="goToUserProfile(user.username)" class="view-profile-btn">
+          View Profile
+        </button>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="getFilteredUsers().length === 0" class="empty-state">
+      <span class="empty-icon">👥</span>
+      <h3>No users found</h3>
+      <p>Try adjusting your search or filters</p>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,101 @@
+<div class="badges-container">
+  <div class="badges-header">
+    <h1>Badges & Achievements</h1>
+    <p>Track your learning achievements and unlock badges as you progress</p>
+  </div>
+
+  <div *ngIf="isLoading" class="loading">
+    <div class="loading-spinner"></div>
+    <p>Loading badges...</p>
+  </div>
+
+  <div *ngIf="errorMessage" class="error-message">
+    <div class="error-icon">⚠️</div>
+    <p>{{ errorMessage }}</p>
+  </div>
+
+  <div *ngIf="!isLoading && !errorMessage" class="filters-section">
+    <div class="filter-group">
+      <h3>Category</h3>
+      <div class="filter-buttons">
+        <button
+          *ngFor="let category of categories"
+          (click)="setCategory(category)"
+          [class.active]="selectedCategory === category">
+          {{ category === 'all' ? 'All Categories' : getCategoryIcon(category) + ' ' + category }}
+        </button>
+      </div>
+    </div>
+
+    <div class="filter-group">
+      <h3>Rarity</h3>
+      <div class="filter-buttons">
+        <button
+          *ngFor="let rarity of rarities"
+          (click)="setRarity(rarity)"
+          [class.active]="selectedRarity === rarity"
+          [style.background-color]="selectedRarity === rarity ? getRarityColor(rarity) : ''"
+          [style.color]="selectedRarity === rarity ? 'white' : ''">
+          {{ rarity === 'all' ? 'All Rarities' : rarity }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="!isLoading && !errorMessage" class="badges-grid">
+    <div
+      *ngFor="let badge of filteredBadges"
+      class="badge-card"
+      [class.unlocked]="badge.isUnlocked"
+      [style.border]="getRarityBorder(badge.rarity)">
+      <div class="badge-header">
+        <div class="badge-icon" [style.color]="badge.isUnlocked ? '' : getRarityColor(badge.rarity)">
+          {{ badge.icon }}
+        </div>
+        <div class="badge-info">
+          <h4>{{ badge.name }}</h4>
+          <span class="badge-points">{{ badge.points }} pts</span>
+        </div>
+      </div>
+
+      <p class="badge-description">{{ badge.description }}</p>
+
+      <div *ngIf="!badge.isUnlocked" class="badge-progress">
+        <div class="progress-header">
+          <span>Progress</span>
+          <span>{{ badge.progress }}%</span>
+        </div>
+        <div class="progress-bar-bg">
+          <div
+            class="progress-bar-fill"
+            [style.width.%]="badge.progress"
+            [style.background-color]="getRarityColor(badge.rarity)">
+          </div>
+        </div>
+        <div class="progress-details">
+          <span>{{ badge.currentCount }} / {{ badge.targetCount }}</span>
+        </div>
+      </div>
+
+      <div *ngIf="badge.isUnlocked" class="badge-unlocked">
+        <div class="unlocked-icon">🎉</div>
+        <span>Unlocked on {{ getUnlockedDate(badge.unlockedAt) }}</span>
+      </div>
+
+      <div class="badge-footer">
+        <span class="badge-category">
+          {{ getCategoryIcon(badge.category) }} {{ badge.category }}
+        </span>
+        <span class="badge-rarity" [style.color]="getRarityColor(badge.rarity)">
+          {{ badge.rarity }}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="!isLoading && !errorMessage && filteredBadges.length === 0" class="empty-state">
+    <div class="empty-icon">🏅</div>
+    <h3>No badges found</h3>
+    <p>Try different filters or start learning to earn badges!</p>
+  </div>
+</div>

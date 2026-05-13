@@ -1,0 +1,45 @@
+<div class="social-feed-container">
+  <!-- Tab Navigation -->
+  <div class="tabs">
+    <button (click)="setTab('feed')" [class.active]="selectedTab === 'feed'">Feed</button>
+    <button (click)="setTab('following')" [class.active]="selectedTab === 'following'">Following</button>
+    <button (click)="setTab('my-posts')" [class.active]="selectedTab === 'my-posts'">My Posts</button>
+  </div>
+
+  <!-- Create Post Button -->
+  <button (click)="togglePostDialog()" class="create-post-btn">Create Post</button>
+
+  <!-- Posts List -->
+  <div class="posts-list">
+    <div *ngFor="let post of getFilteredPosts()" class="post-card">
+      <div class="post-header">
+        <span *ngIf="post.user">{{ post.user.firstName }} {{ post.user.lastName }}</span>
+        <span *ngIf="!post.user">Unknown User</span>
+        <span>{{ formatPostTime(post.createdAt) }}</span>
+      </div>
+      <div class="post-content">{{ post.content }}</div>
+      <div class="post-actions">
+        <button (click)="likePost(post)">{{ post.isLiked ? '❤️' : '🤍' }} {{ post.likesCount }}</button>
+        <span>💬 {{ post.commentsCount }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Post Dialog -->
+  <div *ngIf="showPostDialog" class="post-dialog">
+    <div class="dialog-content">
+      <h3>Create Post</h3>
+      <textarea [(ngModel)]="newPostContent" placeholder="What's on your mind?"></textarea>
+      <div class="dialog-actions">
+        <button (click)="createPost()">Post</button>
+        <button (click)="togglePostDialog()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading">Loading...</div>
+
+  <!-- Error State -->
+  <div *ngIf="errorMessage" class="error">{{ errorMessage }}</div>
+</div>

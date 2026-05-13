@@ -1,0 +1,102 @@
+<div class="notification-center">
+  <div class="notification-header">
+    <h2>Notifications</h2>
+    <div class="notification-actions">
+      <button
+        class="action-btn"
+        (click)="markAllAsRead()"
+        [disabled]="unreadCount === 0">
+        Mark all as read
+      </button>
+      <button
+        class="action-btn secondary"
+        (click)="refreshNotifications()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M23 4v6h-6M1 4v6h6M3.5 22h17M20 4v6h-6M4 4v6h6"></path>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Filter Tabs -->
+  <div class="notification-tabs">
+    <button
+      *ngFor="let tab of notificationTabs"
+      (click)="setActiveTab(tab.type)"
+      [class.active]="activeTab === tab.type"
+      class="tab-button">
+      <span class="tab-icon">{{ tab.icon }}</span>
+      <span class="tab-label">{{ tab.label }}</span>
+      <span class="tab-count" *ngIf="getTabCount(tab.type) > 0">
+        {{ getTabCount(tab.type) }}
+      </span>
+    </button>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-state">
+    <div class="loading-spinner"></div>
+    <p>Loading notifications...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="errorMessage" class="error-state">
+    <div class="error-icon">⚠️</div>
+    <h3>Notification Error</h3>
+    <p>{{ errorMessage }}</p>
+    <button class="retry-btn" (click)="loadNotifications()">Try Again</button>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="!isLoading && !errorMessage && notifications.length === 0" class="empty-state">
+    <div class="empty-icon">🔔</div>
+    <h3>No notifications</h3>
+    <p>You're all caught up!</p>
+  </div>
+
+  <!-- Notification List -->
+  <div *ngIf="!isLoading && !errorMessage && notifications.length > 0" class="notification-list">
+    <div
+      *ngFor="let notification of notifications; let i = index"
+      class="notification-item"
+      [class.unread]="!notification.isRead"
+      [class.high-priority]="notification.priority === 'high' || notification.priority === 'urgent'"
+      (click)="openNotification(notification)">
+      <div class="notification-icon">
+        {{ getNotificationIcon(notification.type) }}
+      </div>
+      <div class="notification-content">
+        <div class="notification-header">
+          <h4>{{ notification.title }}</h4>
+          <span class="notification-time">{{ formatTime(notification.createdAt) }}</span>
+        </div>
+        <p class="notification-message">{{ notification.message }}</p>
+        <div class="notification-meta">
+          <span *ngIf="notification.priority === 'urgent'" class="priority-badge urgent">Urgent</span>
+          <span *ngIf="notification.priority === 'high'" class="priority-badge high">High</span>
+          <span *ngIf="notification.priority === 'low'" class="priority-badge low">Low</span>
+        </div>
+      </div>
+      <div class="notification-actions">
+        <button
+          class="delete-btn"
+          (click)="deleteNotification(notification._id, $event)"
+          title="Delete notification">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 0-2-2h4a2 2 0 0 0 0 2 2v2M10 11v6M14 11v6"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Load More Button -->
+  <div *ngIf="!isLoading && !errorMessage && hasMore" class="load-more">
+    <button
+      class="load-more-btn"
+      (click)="loadMoreNotifications()"
+      [disabled]="isLoadingMore">
+      {{ isLoadingMore ? 'Loading...' : 'Load More' }}
+    </button>
+  </div>
+</div>

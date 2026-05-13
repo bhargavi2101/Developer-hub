@@ -1,0 +1,44 @@
+<div class="landing-wrapper">
+  <nav class="navbar">
+    <div class="logo">Dev<span>Hub</span></div>
+    <ul class="nav-links">
+      <li><a (click)="navigateToRoadmaps()">Roadmaps</a></li>
+      <li><a (click)="navigateToRoadmaps()">Resources</a></li>
+      <li><a href="#">Community</a></li>
+    </ul>
+    <button class="btn-outline" routerLink="/login">Sign In</button>
+  </nav>
+
+  <header class="hero">
+    <div class="container">
+      <span class="announcement">🚀 Explore 50+ New Tech Paths</span>
+      <h1>Architect Your <span class="gradient-text">Developer Journey</span></h1>
+      <p>Stop guessing what to learn next. Access step-by-step roadmaps, curated resources, and community-verified career paths.</p>
+      <div class="hero-btns">
+        <button class="btn-primary" routerLink="/login">Start Learning</button>
+        <button class="btn-glass" (click)="navigateToRoadmaps()">View All Tech</button>
+      </div>
+    </div>
+  </header>
+
+  <section class="grid-section">
+    <div class="section-header">
+      <h2>Featured Roadmaps</h2>
+      <p>Choose a path and start your mastery today.</p>
+    </div>
+
+    <div class="roadmap-grid">
+      <div class="card" *ngFor="let item of roadmaps">
+        <div class="card-tag">{{ item.tag }}</div>
+        <div class="card-icon"></div>
+        <h3>{{ item.title }}</h3>
+        <p>{{ item.description }}</p>
+        <a (click)="navigateToRoadmaps()" class="card-link">Explore Path →</a>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <p>© 2026 Developer Hub. Built with ❤️ for the community.</p>
+  </footer>
+</div>

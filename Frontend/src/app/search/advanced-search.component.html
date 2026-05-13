@@ -1,0 +1,300 @@
+<div class="search-container">
+  <!-- Global Search Bar -->
+  <div class="global-search-bar">
+    <div class="search-input-wrapper">
+      <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"></circle>
+        <path d="m21 21-4.3-4.3"></path>
+      </svg>
+      <input
+        type="text"
+        class="search-input"
+        placeholder="Search everything..."
+        [(ngModel)]="searchQuery"
+        (input)="onSearchInput($event)"
+        (keyup.enter)="performSearch()"
+        [disabled]="isLoading"
+      >
+      <button
+        *ngIf="searchQuery"
+        class="clear-btn"
+        (click)="clearSearch()"
+        title="Clear search">
+        ×
+      </button>
+    </div>
+
+    <!-- Autocomplete Dropdown -->
+    <div *ngIf="showAutocomplete && suggestions.length > 0" class="autocomplete-dropdown">
+      <div
+        *ngFor="let suggestion of suggestions"
+        class="autocomplete-item"
+        (click)="selectSuggestion(suggestion)">
+        <div class="suggestion-icon">
+          <span *ngIf="suggestion.type === 'user'">👤</span>
+          <span *ngIf="suggestion.type === 'technology'">📚</span>
+        </div>
+        <div class="suggestion-text">{{ suggestion.text }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Search Type Tabs -->
+  <div class="search-tabs" *ngIf="searchQuery">
+    <button
+      *ngFor="let tab of searchTabs"
+      (click)="setSearchType(tab.type)"
+      [class.active]="currentSearchType === tab.type"
+      class="tab-button">
+      <span class="tab-icon">{{ tab.icon }}</span>
+      <span class="tab-label">{{ tab.label }}</span>
+      <span class="tab-count" *ngIf="getTabCount(tab.type) > 0">
+        {{ getTabCount(tab.type) }}
+      </span>
+    </button>
+  </div>
+
+  <!-- Advanced Filters -->
+  <div class="filters-section" *ngIf="searchQuery && showFilters">
+    <div class="filter-group" *ngFor="let filterItem of currentFilters; trackBy: trackFilterBy">
+      <label class="filter-label">{{ filterItem.label }}</label>
+
+      <!-- Text input -->
+      <input
+        *ngIf="filterItem.type === 'text'"
+        type="text"
+        class="filter-input"
+        [placeholder]="filterItem.placeholder"
+        [(ngModel)]="filterValues[filterItem.key]"
+        (change)="applyFilters()">
+
+      <!-- Select dropdown -->
+      <select
+        *ngIf="filterItem.type === 'select'"
+        class="filter-select"
+        [(ngModel)]="filterValues[filterItem.key]"
+        (change)="applyFilters()">
+        <option value="">All</option>
+        <option *ngFor="let option of filterItem.options" [value]="option">
+          {{ option }}
+        </option>
+      </select>
+
+      <!-- Multi-select -->
+      <div *ngIf="filterItem.type === 'multi-select'" class="filter-multi-select">
+        <div
+          *ngFor="let option of filterItem.options"
+          class="multi-select-option"
+          (click)="toggleMultiSelectOption(filterItem.key, option)"
+          [class.selected]="isMultiSelectSelected(filterItem.key, option)">
+          {{ option }}
+        </div>
+      </div>
+
+      <!-- Range slider -->
+      <input
+        *ngIf="filterItem.type === 'range'"
+        type="range"
+        class="filter-range"
+        [min]="filterItem.min"
+        [max]="filterItem.max"
+        [(ngModel)]="filterValues[filterItem.key]"
+        (change)="applyFilters()">
+      <div class="range-value">{{ filterValues[filterItem.key] }}</div>
+    </div>
+
+    <!-- Sort Options -->
+    <div class="sort-options">
+      <label class="sort-label">Sort by:</label>
+      <select class="sort-select" [(ngModel)]="sortBy" (change)="applyFilters()">
+        <option *ngFor="let sortOption of sortOptions" [value]="sortOption.value">
+          {{ sortOption.label }}
+        </option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Toggle Filters Button -->
+  <button
+    *ngIf="searchQuery"
+    class="toggle-filters-btn"
+    (click)="showFilters = !showFilters">
+    {{ showFilters ? 'Hide Filters' : 'Show Filters' }}
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M4 10h16M4 14h16M4 18h16"></path>
+    </svg>
+  </button>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-state">
+    <div class="loading-spinner"></div>
+    <p>Searching...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="errorMessage" class="error-state">
+    <div class="error-icon">⚠️</div>
+    <h3>Search Error</h3>
+    <p>{{ errorMessage }}</p>
+    <button class="retry-btn" (click)="performSearch()">Try Again</button>
+  </div>
+
+  <!-- Search Results -->
+  <div *ngIf="!isLoading && !errorMessage" class="search-results">
+    <!-- Global Search Results -->
+    <div *ngIf="currentSearchType === 'global' && globalResults" class="global-results">
+      <div *ngIf="globalResults && globalResults.users && globalResults.users.length > 0" class="result-section">
+        <h3>Users</h3>
+        <div class="result-list">
+          <div *ngFor="let user of globalResults.users" class="result-card user-card">
+            <div class="user-avatar">{{ user.avatar ? user.avatar : user.username.substring(0,2).toUpperCase() }}</div>
+            <div class="user-info">
+              <h4>{{ user.firstName }} {{ user.lastName }}</h4>
+              <p>@{{ user.username }}</p>
+              <div class="user-stats">
+                <span>📊 {{ user.totalPoints }} pts</span>
+              </div>
+            </div>
+            <button class="view-btn" routerLink="/profile/{{ user.username }}">View Profile</button>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="globalResults && globalResults.technologies && globalResults.technologies.length > 0" class="result-section">
+        <h3>Technologies</h3>
+        <div class="result-list">
+          <div *ngFor="let tech of globalResults.technologies" class="result-card tech-card">
+            <div class="tech-icon">{{ getCategoryIcon(tech.category) }}</div>
+            <div class="tech-info">
+              <h4>{{ tech.technology }}</h4>
+              <p>{{ tech.category }}</p>
+            </div>
+            <button class="view-btn" [routerLink]="['/roadmaps', tech._id]">Explore</button>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="globalResults && globalResults.posts && globalResults.posts.length > 0" class="result-section">
+        <h3>Posts</h3>
+        <div class="result-list">
+          <div *ngFor="let post of globalResults.posts" class="result-card post-card">
+            <div class="post-info">
+              <h4>{{ post.user?.firstName }} {{ post.user?.lastName }}</h4>
+              <p>{{ post.content }}</p>
+              <div class="post-stats">
+                <span>❤️ {{ post.likesCount }}</span>
+                <span>💬 {{ post.commentsCount }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="globalResults && globalResults.forums && globalResults.forums.length > 0" class="result-section">
+        <h3>Forums</h3>
+        <div class="result-list">
+          <div *ngFor="let forum of globalResults.forums" class="result-card forum-card">
+            <div class="forum-info">
+              <h4>{{ forum.title }}</h4>
+              <p>{{ forum.description }}</p>
+              <div class="forum-stats">
+                <span>💬 {{ forum.replies?.length || 0 }}</span>
+              </div>
+            </div>
+            <button class="view-btn" [routerLink]="['/forum-topic', forum._id]">View Discussion</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Single Type Results -->
+    <div *ngIf="currentSearchType !== 'global'" class="type-results">
+      <div class="result-header">
+        <h3>{{ getResultTitle() }}</h3>
+        <p>{{ currentResults?.total || 0 }} results found</p>
+      </div>
+
+      <div *ngIf="currentResults && currentResults.data && currentResults.data.length > 0" class="result-list">
+        <div *ngFor="let item of currentResults.data" class="result-card">
+          <ng-container [ngSwitch]="currentSearchType">
+            <!-- User result -->
+            <div *ngSwitchCase="'users'" class="user-card">
+              <div class="user-avatar">{{ item.avatar ? item.avatar : item.username.substring(0,2).toUpperCase() }}</div>
+              <div class="user-info">
+                <h4>{{ item.firstName }} {{ item.lastName }}</h4>
+                <p>@{{ item.username }}</p>
+                <div class="user-stats">
+                  <span v-if="item.location">📍 {{ item.location }}</span>
+                  <span>📊 {{ item.totalPoints }} pts</span>
+                </div>
+              </div>
+              <button class="view-btn" routerLink="/profile/{{ item.username }}">View Profile</button>
+            </div>
+
+            <!-- Technology result -->
+            <div *ngSwitchCase="'technologies'" class="tech-card">
+              <div class="tech-icon">{{ getCategoryIcon(item.category) }}</div>
+              <div class="tech-info">
+                <h4>{{ item.technology }}</h4>
+                <p>{{ item.category }}</p>
+                <div class="tech-stats">
+                  <span>👥 {{ item.enrolledCount || 0 }} enrolled</span>
+                </div>
+              </div>
+              <button class="view-btn" [routerLink]="['/roadmaps', item._id]">Explore</button>
+            </div>
+
+            <!-- Post result -->
+            <div *ngSwitchCase="'posts'" class="post-card">
+              <div class="post-info">
+                <h4>{{ item.user?.firstName }} {{ item.user?.lastName }}</h4>
+                <p>{{ item.content }}</p>
+                <div class="post-stats">
+                  <span>❤️ {{ item.likesCount }}</span>
+                  <span>💬 {{ item.commentsCount }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Forum result -->
+            <div *ngSwitchCase="'forums'" class="forum-card">
+              <div class="forum-info">
+                <h4>{{ item.title }}</h4>
+                <p>{{ item.description }}</p>
+                <div class="forum-stats">
+                  <span>💬 {{ item.replies?.length || 0 }}</span>
+                </div>
+              </div>
+              <button class="view-btn" [routerLink]="['/forum-topic', item._id]">View Discussion</button>
+            </div>
+          </ng-container>
+        </div>
+      </div>
+
+      <!-- No Results -->
+      <div *ngIf="!currentResults?.data?.length" class="no-results">
+        <div class="no-results-icon">🔍</div>
+        <h3>No results found</h3>
+        <p>Try adjusting your search terms or filters</p>
+        <button class="clear-btn" (click)="clearFilters()">Clear Filters</button>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    <div *ngIf="currentResults && currentResults.total > 0" class="pagination">
+      <button
+        class="page-btn"
+        [disabled]="currentPage === 1"
+        (click)="goToPage(currentPage - 1)">
+        ← Previous
+      </button>
+      <span class="page-info">Page {{ currentPage }} of {{ totalPages }}</span>
+      <button
+        class="page-btn"
+        [disabled]="currentPage === totalPages"
+        (click)="goToPage(currentPage + 1)">
+        Next →
+      </button>
+    </div>
+  </div>
+</div>
