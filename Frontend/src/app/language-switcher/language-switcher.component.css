@@ -1,3 +1,20 @@
+:host {
+  --bg-deep: #0a0e27;
+  --bg-surface: #12193a;
+  --card-bg: rgba(18, 25, 58, 0.8);
+  --accent-indigo: #6366f1;
+  --accent-purple: #8b5cf6;
+  --accent-pink: #d946ef;
+  --text-main: #f8fafc;
+  --text-dim: #94a3b8;
+  --gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #d946ef 100%);
+  --line: rgba(255, 255, 255, 0.1);
+  --input-bg: rgba(18, 25, 58, 0.6);
+  --success: #10b981;
+  --warning: #f59e0b;
+  --error: #ef4444;
+}
+
 .language-switcher {
   position: relative;
   display: inline-block;
@@ -8,7 +25,7 @@
   align-items: center;
   gap: 8px;
   padding: 8px 16px;
-  background: #ffffff;
+  background: var(--bg-surface);
   border: 2px solid #e5e7eb;
   border-radius: 8px;
   cursor: pointer;
@@ -52,7 +69,7 @@
   top: 100%;
   left: 0;
   right: 0;
-  background: #ffffff;
+  background: var(--bg-surface);
   border-radius: 12px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
   margin-top: 8px;
@@ -71,11 +88,11 @@
   gap: 12px;
   padding: 16px;
   border-bottom: 1px solid #e5e7eb;
-  background: #f9fafb;
+  background: var(--card-bg);
 }
 
 .search-icon {
-  color: #6b7280;
+  color: var(--text-dim);
   flex-shrink: 0;
 }
 
@@ -85,11 +102,11 @@
   outline: none;
   background: transparent;
   font-size: 14px;
-  color: #1f2937;
+  color: var(--text-main);
 }
 
 .search-input::placeholder {
-  color: #9ca3af;
+  color: var(--accent-indigo);
 }
 
 .language-list {
@@ -151,13 +168,13 @@
 
 .language-name {
   font-weight: 600;
-  color: #1f2937;
+  color: var(--text-main);
   font-size: 15px;
 }
 
 .language-english {
   font-weight: 400;
-  color: #6b7280;
+  color: var(--text-dim);
   font-size: 13px;
 }
 

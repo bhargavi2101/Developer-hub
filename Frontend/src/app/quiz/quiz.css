@@ -1,7 +1,27 @@
+:host {
+  --bg-deep: #0a0e27;
+  --bg-surface: #12193a;
+  --card-bg: rgba(18, 25, 58, 0.8);
+  --accent-indigo: #6366f1;
+  --accent-purple: #8b5cf6;
+  --accent-pink: #d946ef;
+  --text-main: #f8fafc;
+  --text-dim: #94a3b8;
+  --gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #d946ef 100%);
+  --line: rgba(255, 255, 255, 0.1);
+  --input-bg: rgba(18, 25, 58, 0.6);
+  --success: #10b981;
+  --warning: #f59e0b;
+  --error: #ef4444;
+}
+
 .quiz-container {
   max-width: 1000px;
   margin: 0 auto;
   padding: 2rem;
+  background: var(--bg-deep);
+  color: var(--text-main);
+  min-height: 100vh;
 }
 
 .quiz-header {
@@ -14,7 +34,7 @@
 .quiz-header h1 {
   margin: 0;
   font-size: 1.75rem;
-  color: #1f2937;
+  color: var(--text-main);
 }
 
 .btn-back {
@@ -35,7 +55,7 @@
 .loading {
   text-align: center;
   padding: 3rem;
-  color: #6b7280;
+  color: var(--text-dim);
 }
 
 .loading-spinner {
@@ -66,7 +86,7 @@
 }
 
 .quiz-intro {
-  background-color: white;
+  background-color: var(--card-bg);
   border-radius: 0.75rem;
   padding: 2rem;
   margin-bottom: 2rem;
@@ -88,7 +108,7 @@
   align-items: center;
   gap: 1rem;
   padding: 1rem;
-  background-color: #f9fafb;
+  background-color: rgba(18, 25, 58, 0.4);
   border-radius: 0.5rem;
 }
 
@@ -103,14 +123,14 @@
 .meta-label {
   margin: 0 0 0.25rem 0;
   font-size: 0.875rem;
-  color: #6b7280;
+  color: var(--text-dim);
   font-weight: 500;
 }
 
 .meta-value {
   margin: 0;
   font-size: 1.125rem;
-  color: #1f2937;
+  color: var(--text-main);
   font-weight: 600;
 }
 
@@ -143,7 +163,7 @@
 }
 
 .quiz-progress {
-  background-color: white;
+  background-color: var(--card-bg);
   border-radius: 0.75rem;
   padding: 2rem;
   margin-bottom: 2rem;
@@ -180,7 +200,7 @@
 
 .progress-label {
   font-weight: 500;
-  color: #6b7280;
+  color: var(--text-dim);
 }
 
 .progress-bar-bg {
@@ -202,7 +222,7 @@
 }
 
 .question-card {
-  background-color: #f9fafb;
+  background-color: rgba(18, 25, 58, 0.4);
   border-radius: 0.75rem;
   padding: 2rem;
   margin-bottom: 1.5rem;
@@ -235,7 +255,7 @@
 .question-text {
   margin: 0 0 1.5rem 0;
   font-size: 1.25rem;
-  color: #1f2937;
+  color: var(--text-main);
   font-weight: 500;
   line-height: 1.6;
 }
@@ -247,7 +267,7 @@
 }
 
 .option-btn {
-  background-color: white;
+  background-color: var(--card-bg);
   border: 2px solid #d1d5db;
   border-radius: 0.5rem;
   padding: 1rem;
@@ -322,7 +342,7 @@
 .btn-nav {
   padding: 0.75rem 1.5rem;
   border: 1px solid #d1d5db;
-  background-color: white;
+  background-color: var(--card-bg);
   border-radius: 0.5rem;
   font-size: 1rem;
   font-weight: 500;
@@ -352,7 +372,7 @@
 }
 
 .quiz-results {
-  background-color: white;
+  background-color: var(--card-bg);
   border-radius: 0.75rem;
   padding: 2rem;
 }
@@ -365,7 +385,7 @@
 .results-header h2 {
   margin: 0 0 1rem 0;
   font-size: 2rem;
-  color: #1f2937;
+  color: var(--text-main);
 }
 
 .result-message {
@@ -437,7 +457,7 @@
   align-items: center;
   gap: 1rem;
   padding: 1rem;
-  background-color: #f9fafb;
+  background-color: rgba(18, 25, 58, 0.4);
   border-radius: 0.5rem;
 }
 
@@ -452,19 +472,19 @@
 .stat-label {
   margin: 0 0 0.25rem 0;
   font-size: 0.875rem;
-  color: #6b7280;
+  color: var(--text-dim);
   font-weight: 500;
 }
 
 .stat-value {
   margin: 0;
   font-size: 1.25rem;
-  color: #1f2937;
+  color: var(--text-main);
   font-weight: 600;
 }
 
 .answers-review {
-  background-color: #f9fafb;
+  background-color: rgba(18, 25, 58, 0.4);
   border-radius: 0.75rem;
   padding: 1.5rem;
   margin-bottom: 2rem;
@@ -473,7 +493,7 @@
 .answers-review h3 {
   margin: 0 0 1.5rem 0;
   font-size: 1.5rem;
-  color: #1f2937;
+  color: var(--text-main);
 }
 
 .review-item {
@@ -502,7 +522,7 @@
 
 .review-question {
   margin: 0;
-  color: #1f2937;
+  color: var(--text-main);
   font-weight: 500;
 }
 
@@ -536,7 +556,7 @@
 }
 
 .review-explanation {
-  color: #6b7280;
+  color: var(--text-dim);
   font-size: 0.875rem;
   font-style: italic;
 }

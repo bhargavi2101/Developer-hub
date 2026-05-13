@@ -1,7 +1,27 @@
+:host {
+  --bg-deep: #0a0e27;
+  --bg-surface: #12193a;
+  --card-bg: rgba(18, 25, 58, 0.8);
+  --accent-indigo: #6366f1;
+  --accent-purple: #8b5cf6;
+  --accent-pink: #d946ef;
+  --text-main: #f8fafc;
+  --text-dim: #94a3b8;
+  --gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #d946ef 100%);
+  --line: rgba(255, 255, 255, 0.1);
+  --input-bg: rgba(18, 25, 58, 0.6);
+  --success: #10b981;
+  --warning: #f59e0b;
+  --error: #ef4444;
+}
+
 .user-search-container {
   max-width: 1400px;
   margin: 0 auto;
   padding: 2rem;
+  background: var(--bg-deep);
+  color: var(--text-main);
+  min-height: 100vh;
 }
 
 .search-header {
@@ -12,17 +32,17 @@
 .search-header h1 {
   font-size: 2.5rem;
   margin-bottom: 0.5rem;
-  color: #1f2937;
+  color: var(--text-main);
 }
 
 .search-subtitle {
   font-size: 1.1rem;
-  color: #6b7280;
+  color: var(--text-dim);
 }
 
 .search-section {
-  background: white;
-  border: 1px solid #e5e7eb;
+  background: var(--card-bg);
+  border: 1px solid var(--line);
   border-radius: 0.75rem;
   padding: 2rem;
   margin-bottom: 2rem;
@@ -50,7 +70,7 @@
 
 .search-btn {
   padding: 1rem 2rem;
-  background: #3b82f6;
+  background: var(--accent-indigo);
   color: white;
   border: none;
   border-radius: 0.5rem;
@@ -87,7 +107,7 @@
 
 .filter-group label {
   font-weight: 600;
-  color: #1f2937;
+  color: var(--text-main);
   font-size: 0.875rem;
 }
 
@@ -120,7 +140,7 @@
 .clear-filters-btn {
   padding: 0.75rem 1rem;
   background: #f3f4f6;
-  color: #1f2937;
+  color: var(--text-main);
   border: none;
   border-radius: 0.5rem;
   cursor: pointer;
@@ -136,7 +156,7 @@
 .error-state {
   text-align: center;
   padding: 4rem 2rem;
-  color: #6b7280;
+  color: var(--text-dim);
 }
 
 .spinner {
@@ -156,7 +176,7 @@
 .retry-btn {
   margin-top: 1rem;
   padding: 0.5rem 1rem;
-  background: #3b82f6;
+  background: var(--accent-indigo);
   color: white;
   border: none;
   border-radius: 0.5rem;
@@ -170,8 +190,8 @@
 }
 
 .user-card {
-  background: white;
-  border: 1px solid #e5e7eb;
+  background: var(--card-bg);
+  border: 1px solid var(--line);
   border-radius: 0.75rem;
   padding: 1.5rem;
   transition: all 0.2s;
@@ -225,7 +245,7 @@
 .user-name {
   font-size: 1.25rem;
   margin: 0 0 0.25rem;
-  color: #1f2937;
+  color: var(--text-main);
   cursor: pointer;
   transition: color 0.2s;
 }
@@ -235,7 +255,7 @@
 }
 
 .user-username {
-  color: #6b7280;
+  color: var(--text-dim);
   font-size: 0.875rem;
   margin: 0 0 0.5rem;
 }
@@ -245,7 +265,7 @@
   align-items: center;
   gap: 0.25rem;
   font-size: 0.875rem;
-  color: #6b7280;
+  color: var(--text-dim);
 }
 
 .user-bio {
@@ -273,7 +293,7 @@
 .more-skills {
   padding: 0.25rem 0.75rem;
   background: #f3f4f6;
-  color: #6b7280;
+  color: var(--text-dim);
   border-radius: 9999px;
   font-size: 0.75rem;
 }
@@ -297,12 +317,12 @@
 .stat-value {
   font-size: 1.125rem;
   font-weight: 700;
-  color: #1f2937;
+  color: var(--text-main);
 }
 
 .stat-label {
   font-size: 0.75rem;
-  color: #6b7280;
+  color: var(--text-dim);
   margin-top: 0.25rem;
 }
 
@@ -315,7 +335,7 @@
 .social-link {
   padding: 0.375rem 0.75rem;
   background: #f3f4f6;
-  color: #1f2937;
+  color: var(--text-main);
   border-radius: 9999px;
   font-size: 0.875rem;
   text-decoration: none;
@@ -336,7 +356,7 @@
 .follow-btn {
   flex: 1;
   padding: 0.75rem 1rem;
-  background: #3b82f6;
+  background: var(--accent-indigo);
   color: white;
   border: none;
   border-radius: 0.5rem;
@@ -361,7 +381,7 @@
 .view-profile-btn {
   padding: 0.75rem 1rem;
   background: #f3f4f6;
-  color: #1f2937;
+  color: var(--text-main);
   border: none;
   border-radius: 0.5rem;
   cursor: pointer;
@@ -378,7 +398,7 @@
   grid-column: 1 / -1;
   text-align: center;
   padding: 4rem 2rem;
-  color: #6b7280;
+  color: var(--text-dim);
 }
 
 .empty-icon {
@@ -389,7 +409,7 @@
 .empty-state h3 {
   font-size: 1.5rem;
   margin-bottom: 0.5rem;
-  color: #1f2937;
+  color: var(--text-main);
 }
 
 @media (max-width: 768px) {
