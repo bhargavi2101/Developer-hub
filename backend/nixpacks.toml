@@ -1,0 +1,15 @@
+[phases.setup]
+nixPkgs = ["nodejs-18_x"]
+
+[phases.build]
+cmds = ["npm install"]
+
+[start]
+cmd = "node server.js"
+
+[static]
+# Define static file serving for uploads
+guest = "/app/uploads"
+
+[env]
+NODE_ENV = "production"
