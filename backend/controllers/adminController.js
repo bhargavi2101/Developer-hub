@@ -29,13 +29,7 @@ const createLog = async (adminId, action, targetType, targetId, targetName, desc
 // Get admin dashboard statistics
 const getDashboardStats = async (req, res) => {
   try {
-    const adminId = req.user.id;
-
-    // Check if user is admin
-    const admin = await User.findById(adminId);
-    if (!admin || !admin.isAdmin) {
-      return res.status(403).json({ msg: 'Admin access required' });
-    }
+    // Admin middleware ensures user is admin
 
     // Get all statistics in parallel
     const [
@@ -103,13 +97,7 @@ const getDashboardStats = async (req, res) => {
 // Get all users with pagination and filtering
 const getAllUsers = async (req, res) => {
   try {
-    const adminId = req.user.id;
-
-    // Check if user is admin
-    const admin = await User.findById(adminId);
-    if (!admin || !admin.isAdmin) {
-      return res.status(403).json({ msg: 'Admin access required' });
-    }
+    // Admin middleware ensures user is admin
 
     const { page = 1, limit = 20, search = '', role = '', sortBy = 'createdAt', sortOrder = 'desc' } = req.query;
 

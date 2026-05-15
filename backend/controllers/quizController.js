@@ -45,35 +45,25 @@ const getQuiz = async (req, res) => {
 
 // Submit quiz answers
 const submitQuiz = async (req, res) => {
-  console.log('=== SUBMIT QUIZ START ===');
   try {
     const userId = req.user.id;
     const { quizId } = req.params;
     const { answers, timeSpent } = req.body;
 
-    console.log('Submit quiz request:', { userId, quizId, answersLength: answers?.length, timeSpent });
-
     if (!answers || !Array.isArray(answers)) {
-      console.log('Invalid answers format');
       return res.status(400).json({ msg: 'Invalid answers format' });
     }
 
     const quiz = await Quiz.findById(quizId);
     if (!quiz) {
-      console.log('Quiz not found:', quizId);
       return res.status(404).json({ msg: 'Quiz not found' });
     }
-
-    console.log('Quiz found:', quiz.title);
 
     // Check if user has exceeded attempts
     const previousAttempts = await QuizResult.countDocuments({ userId, quizId });
     if (previousAttempts >= quiz.maxAttempts) {
-      console.log('Max attempts exceeded');
       return res.status(400).json({ msg: 'Maximum quiz attempts exceeded' });
     }
-
-    console.log('Processing answers...');
 
     // Calculate score
     let score = 0;
@@ -120,8 +110,6 @@ const submitQuiz = async (req, res) => {
     const percentage = Math.round((score / maxScore) * 100);
     const passed = percentage >= quiz.passingScore;
 
-    console.log('Quiz calculated:', { score, maxScore, percentage, passed });
-
     // Calculate attempt number
     const attemptNumber = previousAttempts + 1;
 
@@ -139,20 +127,16 @@ const submitQuiz = async (req, res) => {
       attempts: attemptNumber
     });
 
-    console.log('Saving quiz result...');
     await quizResult.save();
-    console.log('Quiz result saved successfully');
 
     // Check for quiz-related achievements
     try {
       const { checkAchievements } = require('./badgeController');
       await checkAchievements(userId);
     } catch (badgeError) {
-      console.log('Error checking achievements:', badgeError);
       // Don't fail the quiz submission if badge checking fails
     }
 
-    console.log('Sending response...');
     res.status(200).json({
       result: {
         score,
@@ -166,11 +150,8 @@ const submitQuiz = async (req, res) => {
       },
       message: passed ? '🎉 Congratulations! You passed the quiz!' : '❌ You did not pass. Keep learning and try again!'
     });
-    console.log('=== SUBMIT QUIZ END ===');
   } catch (error) {
-    console.log('=== SUBMIT QUIZ ERROR ===');
-    console.log('Submit quiz error:', error);
-    console.log('Error stack:', error.stack);
+    console.error('Submit quiz error:', error.message);
     res.status(500).json({ msg: 'Server error' });
   }
 };

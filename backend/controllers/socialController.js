@@ -2,6 +2,7 @@ const UserConnection = require('../models/UserConnection');
 const Post = require('../models/Post');
 const Comment = require('../models/Comment');
 const User = require('../models/User');
+const { sanitizeHtml, sanitizeInput } = require('../middlewares/validationMiddleware');
 
 // Follow user
 const followUser = async (req, res) => {
@@ -158,23 +159,31 @@ const createPost = async (req, res) => {
       return res.status(400).json({ msg: 'Post content is required' });
     }
 
+    if (content.length > 5000) {
+      return res.status(400).json({ msg: 'Post content must be less than 5000 characters' });
+    }
+
+    // Sanitize content to prevent XSS
+    const sanitizedContent = sanitizeHtml(content);
+
     const post = new Post({
       userId,
-      content,
+      content: sanitizedContent,
       type: type || 'text',
       visibility: visibility || 'public',
-      tags: tags || [],
-      media: media || []
+      tags: Array.isArray(tags) ? tags.slice(0, 10) : [],
+      media: Array.isArray(media) ? media.slice(0, 5) : []
     });
 
     await post.save();
 
-    // Extract and process mentions
+    // Extract and process mentions (with validation)
     if (content.includes('@')) {
-      const mentions = content.match(/@(\w+)/g);
-      if (mentions) {
-        const usernames = mentions.map(m => m[1]);
-        const mentionedUsers = await User.find({ username: { $in: usernames } });
+      const mentionRegex = /@([a-zA-Z0-9_]{1,30})/g;
+      const mentions = content.match(mentionRegex);
+      if (mentions && mentions.length > 0) {
+        const usernames = mentions.map(m => m.substring(1)).filter(u => /^[a-zA-Z0-9_]+$/.test(u));
+        const mentionedUsers = await User.find({ username: { $in: usernames } }).limit(10);
 
         for (const user of mentionedUsers) {
           if (user && !post.mentions.includes(user._id)) {
@@ -187,7 +196,7 @@ const createPost = async (req, res) => {
 
     res.status(201).json(post);
   } catch (error) {
-    console.log('Create post error:', error);
+    console.error('Create post error:', error.message);
     res.status(500).json({ msg: 'Server error' });
   }
 };

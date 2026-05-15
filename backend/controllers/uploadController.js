@@ -1,6 +1,7 @@
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const crypto = require('crypto');
 const User = require('../models/User');
 
 // Configure multer for local file storage
@@ -14,9 +15,12 @@ const storage = multer.diskStorage({
     cb(null, uploadDir);
   },
   filename: function (req, file, cb) {
-    // Generate unique filename
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, uniqueSuffix + path.extname(file.originalname));
+    // Generate cryptographically secure unique filename
+    const uniqueSuffix = crypto.randomBytes(16).toString('hex');
+    const ext = path.extname(file.originalname).toLowerCase();
+    // Only allow single extension
+    const safeExt = ext.replace(/\./g, '.').replace(/^\.+/, '.');
+    cb(null, `${uniqueSuffix}${safeExt}`);
   }
 });
 
@@ -24,9 +28,12 @@ const storage = multer.diskStorage({
 const fileFilter = (req, file, cb) => {
   const allowedTypes = /jpeg|jpg|png|gif|webp/;
   const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-  const mimetype = allowedTypes.test(file.mimetype);
 
-  if (extname && mimetype) {
+  // Additional validation: check actual file signature
+  const allowedMimeTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+  const isValidMimeType = allowedMimeTypes.includes(file.mimetype);
+
+  if (extname && isValidMimeType) {
     cb(null, true);
   } else {
     cb(new Error('Only image files are allowed (JPEG, JPG, PNG, GIF, WEBP)'));
@@ -37,7 +44,8 @@ const fileFilter = (req, file, cb) => {
 const upload = multer({
   storage: storage,
   limits: {
-    fileSize: 5 * 1024 * 1024 // 5MB limit
+    fileSize: 2 * 1024 * 1024, // Reduced to 2MB for security
+    files: 1 // Only allow one file at a time
   },
   fileFilter: fileFilter
 });

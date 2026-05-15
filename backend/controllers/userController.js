@@ -18,7 +18,21 @@ const getUserProfile = async (req, res) => {
 const updateUserProfile = async (req, res) => {
   try {
     const userId = req.user.id;
-    const { username, email, firstName, lastName, bio, avatar } = req.body;
+    const {
+      username,
+      email,
+      firstName,
+      lastName,
+      bio,
+      avatar,
+      location,
+      website,
+      github,
+      linkedin,
+      skills,
+      interests,
+      learningGoals
+    } = req.body;
 
     const user = await User.findById(userId);
     if (!user) {
@@ -42,19 +56,18 @@ const updateUserProfile = async (req, res) => {
       user.email = email;
     }
 
-    // Update other fields
-    if (firstName !== undefined) user.firstName = firstName;
-    if (lastName !== undefined) user.lastName = lastName;
-    if (bio !== undefined) user.bio = bio;
-    if (avatar !== undefined) user.avatar = avatar;
-    // Update extended profile fields
-    if (location !== undefined) user.location = location;
-    if (website !== undefined) user.website = website;
-    if (github !== undefined) user.github = github;
-    if (linkedin !== undefined) user.linkedin = linkedin;
-    if (skills !== undefined) user.skills = skills;
-    if (interests !== undefined) user.interests = interests;
-    if (learningGoals !== undefined) user.learningGoals = learningGoals;
+    // Update other fields with validation
+    if (firstName !== undefined) user.firstName = firstName?.substring(0, 50) || '';
+    if (lastName !== undefined) user.lastName = lastName?.substring(0, 50) || '';
+    if (bio !== undefined) user.bio = bio?.substring(0, 500) || '';
+    if (avatar !== undefined) user.avatar = avatar?.substring(0, 255) || '';
+    if (location !== undefined) user.location = location?.substring(0, 100) || '';
+    if (website !== undefined) user.website = website?.substring(0, 255) || '';
+    if (github !== undefined) user.github = github?.substring(0, 100) || '';
+    if (linkedin !== undefined) user.linkedin = linkedin?.substring(0, 100) || '';
+    if (skills !== undefined && Array.isArray(skills)) user.skills = skills.slice(0, 20);
+    if (interests !== undefined && Array.isArray(interests)) user.interests = interests.slice(0, 20);
+    if (learningGoals !== undefined && Array.isArray(learningGoals)) user.learningGoals = learningGoals.slice(0, 10);
 
     await user.save();
 
@@ -65,7 +78,7 @@ const updateUserProfile = async (req, res) => {
       user: updatedUser
     });
   } catch (error) {
-    console.log('Update user profile error:', error);
+    console.error('Update user profile error:', error.message);
     res.status(500).json({ msg: 'Server error' });
   }
 };
@@ -75,6 +88,14 @@ const changePassword = async (req, res) => {
   try {
     const userId = req.user.id;
     const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ msg: 'Current password and new password are required' });
+    }
+
+    if (newPassword.length < 8) {
+      return res.status(400).json({ msg: 'New password must be at least 8 characters long' });
+    }
 
     const user = await User.findById(userId);
     if (!user) {
@@ -87,13 +108,21 @@ const changePassword = async (req, res) => {
       return res.status(400).json({ msg: 'Current password is incorrect' });
     }
 
-    // Update password (will be hashed by pre-save hook)
-    user.password = newPassword;
+    // Check if new password is same as current
+    const isSamePassword = await user.matchPassword(newPassword);
+    if (isSamePassword) {
+      return res.status(400).json({ msg: 'New password must be different from current password' });
+    }
+
+    // Hash and update password
+    const bcrypt = require('bcrypt');
+    const salt = await bcrypt.genSalt(12);
+    user.password = await bcrypt.hash(newPassword, salt);
     await user.save();
 
     res.status(200).json({ msg: 'Password changed successfully' });
   } catch (error) {
-    console.log('Change password error:', error);
+    console.error('Change password error:', error.message);
     res.status(500).json({ msg: 'Server error' });
   }
 };

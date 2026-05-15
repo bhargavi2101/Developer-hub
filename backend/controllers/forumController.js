@@ -1,6 +1,7 @@
 const Forum = require('../models/Forum');
 const ForumReply = require('../models/ForumReply');
 const User = require('../models/User');
+const { sanitizeHtml, sanitizeInput } = require('../middlewares/validationMiddleware');
 
 // Create forum topic
 const createForum = async (req, res) => {
@@ -12,32 +13,35 @@ const createForum = async (req, res) => {
       return res.status(400).json({ msg: 'Forum title is required' });
     }
 
+    if (title.length > 200) {
+      return res.status(400).json({ msg: 'Forum title must be less than 200 characters' });
+    }
+
     if (!technologyId) {
       return res.status(400).json({ msg: 'technologyId is required' });
     }
+
+    // Sanitize inputs
+    const sanitizedTitle = sanitizeInput(title);
+    const sanitizedDescription = sanitizeHtml(description || '');
 
     const forum = new Forum({
       userId,
       technologyId,
       subTechnologyId,
-      title: title.trim(),
-      description: description || '',
+      title: sanitizedTitle,
+      description: sanitizedDescription,
       category: category || 'discussion',
-      tags: tags || [],
+      tags: Array.isArray(tags) ? tags.slice(0, 10) : [],
       isPinned: isPinned || false,
       createdBy: userId
     });
 
     await forum.save();
 
-    // Update forum reply count
-    await Forum.findByIdAndUpdate(forum._id, {
-      $inc: { replyCount: 1 }
-    });
-
     res.status(201).json(forum);
   } catch (error) {
-    console.log('Create forum error:', error);
+    console.error('Create forum error:', error.message);
     res.status(500).json({ msg: 'Server error' });
   }
 };
@@ -143,6 +147,10 @@ const addReply = async (req, res) => {
       return res.status(400).json({ msg: 'Reply content is required' });
     }
 
+    if (content.length > 2000) {
+      return res.status(400).json({ msg: 'Reply content must be less than 2000 characters' });
+    }
+
     const forum = await Forum.findById(forumId);
     if (!forum) {
       return res.status(404).json({ msg: 'Forum not found' });
@@ -159,18 +167,21 @@ const addReply = async (req, res) => {
       if (parentReply) {
         parentDepth = parentReply.depth || 0;
         if (parentDepth >= 5) {
-          return res.status(400). json({ msg: 'Maximum reply depth exceeded' });
+          return res.status(400).json({ msg: 'Maximum reply depth exceeded' });
         }
       }
     }
 
+    // Sanitize content to prevent XSS
+    const sanitizedContent = sanitizeHtml(content);
+
     const replyData = {
       forumId,
       userId,
-      content,
+      content: sanitizedContent,
       parentReplyId: parentReplyId || null,
       depth: parentDepth + 1,
-      codeBlocks: codeBlocks || []
+      codeBlocks: Array.isArray(codeBlocks) ? codeBlocks.slice(0, 5) : []
     };
 
     const reply = new ForumReply(replyData);
@@ -184,7 +195,7 @@ const addReply = async (req, res) => {
 
     res.status(201).json(reply);
   } catch (error) {
-    console.log('Add reply error:', error);
+    console.error('Add reply error:', error.message);
     res.status(500).json({ msg: 'Server error' });
   }
 };
@@ -266,11 +277,18 @@ const searchForums = async (req, res) => {
       return res.status(400).json({ msg: 'Search query must be at least 2 characters' });
     }
 
+    if (q.length > 100) {
+      return res.status(400).json({ msg: 'Search query too long' });
+    }
+
+    // Escape special regex characters to prevent ReDoS
+    const escapedQuery = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
     const forums = await Forum.find({
       $or: [
-        { title: { $regex: q, $options: 'i' } },
-        { description: { $regex: q, $options: 'i' } },
-        { tags: { $in: [new RegExp(q, 'i')] } }
+        { title: { $regex: escapedQuery, $options: 'i' } },
+        { description: { $regex: escapedQuery, $options: 'i' } },
+        { tags: { $in: [new RegExp(escapedQuery, 'i')] } }
       ]
     })
       .populate('createdBy', 'username firstName lastName avatar')
@@ -279,7 +297,7 @@ const searchForums = async (req, res) => {
 
     res.status(200).json({ forums, count: forums.length });
   } catch (error) {
-    console.log('Search forums error:', error);
+    console.error('Search forums error:', error.message);
     res.status(500).json({ msg: 'Server error' });
   }
 };
